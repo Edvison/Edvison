@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+
+
+<html theme="dark" showBanner="true" hasBanner="true" > 
+<link href="/project/fontawesome/css/fontawesome.css" rel="stylesheet">
+<link href="/project/fontawesome/css/brands.css" rel="stylesheet">
+<link href="/project/fontawesome/css/solid.css" rel="stylesheet">
+<script src="/project/js/color.global.min.js" ></script>
+<script src="/project/js/load-settings.js" ></script>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>CSM兼容的OVMF制作 | Edvison&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="自己编译半天不如直接用官方现成的:)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSM兼容的OVMF制作">
+<meta property="og:url" content="https://edvison.github.io/project/2023/08/09/CSM%E5%85%BC%E5%AE%B9%E7%9A%84OVMF%E5%88%B6%E4%BD%9C/index.html">
+<meta property="og:site_name" content="Edvison&#39;s blog">
+<meta property="og:description" content="自己编译半天不如直接用官方现成的:)">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230222145946275.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230221152531592.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230222151731988.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230220175819842.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230222152022613.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230220175859777.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230222151831529.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230221142824711.png">
+<meta property="article:published_time" content="2023-08-09T07:39:42.000Z">
+<meta property="article:modified_time" content="2023-08-09T07:42:27.412Z">
+<meta property="article:author" content="edvison">
+<meta property="article:tag" content="UEFI">
+<meta property="article:tag" content="OVMF编译">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230222145946275.png">
+  
+    <link rel="alternate" href="/project/atom.xml" title="Edvison's blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-192.png" sizes="192x192">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-192.png" sizes="192x192">
+  
+  
+<link rel="stylesheet" href="/project/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  
+  
+    
+<div id="banner" class="">
+  <img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230807175151.png" itemprop="image">
+  <div id="banner-dim"></div>
+</div>
+ 
+   
+  <div id="main-grid" class="shadow   ">
+    <div id="nav" class=""  >
+      <navbar id="navbar">
+  <nav id="title-nav">
+    <a href="/project/">
+      <div id="vivia-logo">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div>Edvison's blog </div>
+    </a>
+  </nav>
+  <nav id="main-nav">
+    
+      <a class="main-nav-link" href="/project/">Home</a>
+    
+      <a class="main-nav-link" href="/project/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/project/about">About</a>
+    
+  </nav>
+  <nav id="sub-nav">
+    <a id="theme-btn" class="nav-icon">
+      <span class="material-symbols-rounded light-mode-icon">wb_sunny</span>
+      <span class="material-symbols-rounded dark-mode-icon">dark_mode</span>
+    </a>
+    
+      <a id="nav-rss-link" class="nav-icon mobile-hide" href="/project/atom.xml" title="RSS 订阅">
+        <span class="material-symbols-rounded rss">rss_feed</span>
+      </a>
+    
+    <a id="nav-search-btn" class="nav-icon" title="搜索" style="display: none;">
+      <span class="material-symbols-rounded">search</span>
+    </a>
+    <div id="nav-menu-btn" class="nav-icon">
+      <span class="material-symbols-rounded">menu</span>
+    </div>
+  </nav>
+</navbar>
+<div id="nav-dropdown" class="hidden">
+  <div id="dropdown-link-list">
+    
+      <a class="nav-dropdown-link" href="/project/">Home</a>
+    
+      <a class="nav-dropdown-link" href="/project/archives">Archives</a>
+    
+      <a class="nav-dropdown-link" href="/project/about">About</a>
+    
+    
+      <a class="nav-dropdown-link" href="/project/atom.xml" title="RSS 订阅">RSS</a>
+     
+    </div>
+</div>
+<script>
+  let dropdownBtn = document.getElementById("nav-menu-btn");
+  let dropdownEle = document.getElementById("nav-dropdown");
+  dropdownBtn.onclick = function() {
+    dropdownEle.classList.toggle("hidden");
+  }
+</script>
+    </div>
+    <div id="sidebar-wrapper">
+      <sidebar id="sidebar">
+  
+    <div class="widget-wrap">
+  <div class="info-card">
+    <div class="avatar">
+      
+        <image src=https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230808155156.png></image>
+      
+      <div class="img-dim"></div>
+    </div>
+    <div class="info">
+      <div class="username">Edvison </div>
+      <div class="dot"></div>
+      <div class="subtitle">flung out of space </div>
+      <div class="link-list">
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://github.com/Edvison" title="github"><i class="fa-brands fa-github"></i></a>
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://weibo.com/u/6038772011" title="weibo"><i class="fa-brands fa-weibo"></i></a>
+         
+      </div>  
+    </div>
+  </div>
+</div>
+
+  
+  <div class="sticky">
+    
+      
+
+
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">分类</h3>
+      <div class="category-box">
+            <a class="category-link" href="/project/categories/UEFI%E5%8E%9F%E7%90%86/">
+                UEFI原理
+                <div class="category-count">3</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/UEFI%E5%9B%BA%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                UEFI固件安全
+                <div class="category-count">6</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/MBR%E5%8E%9F%E7%90%86/">
+                MBR原理
+                <div class="category-count">2</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%BF%BB%E8%AF%91/">
+                翻译
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/Grub2%E5%8E%9F%E7%90%86/">
+                Grub2原理
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/IoT%E5%AE%89%E5%85%A8/">
+                IoT安全
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%A1%AC%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                硬件安全
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/VBIOS%E4%BF%AE%E6%94%B9/">
+                VBIOS修改
+                <div class="category-count">1</div>
+            </a>
+        </div>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">标签</h3>
+      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/CSM/" rel="tag">CSM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/DMA%E6%94%BB%E5%87%BB/" rel="tag">DMA攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/Grub2/" rel="tag">Grub2</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/HID%E6%94%BB%E5%87%BB/" rel="tag">HID攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR/" rel="tag">MBR</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR%E5%90%8E%E9%97%A8/" rel="tag">MBR后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OS-Loader/" rel="tag">OS Loader</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OVMF%E7%BC%96%E8%AF%91/" rel="tag">OVMF编译</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/PCH/" rel="tag">PCH</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM/" rel="tag">SMM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E5%90%8E%E9%97%A8/" rel="tag">SMM后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">SMM漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/UEFI/" rel="tag">UEFI</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/VBIOS/" rel="tag">VBIOS</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/pcie/" rel="tag">pcie</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4/" rel="tag">写保护</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4%E7%AA%81%E7%A0%B4/" rel="tag">写保护突破</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%8E%9F%E7%90%86/" rel="tag">原理</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/" rel="tag">安全启动</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%BC%80%E5%8F%91%E6%9D%BF/" rel="tag">开发板</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/" rel="tag">树莓派</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" rel="tag">漏洞利用</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E6%89%AB%E6%8F%8F/" rel="tag">漏洞扫描</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" rel="tag">环境搭建</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%94%B5%E6%BA%90%E6%95%85%E9%9A%9C/" rel="tag">电源故障</a></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">归档</h3>
+      
+      
+        <a class="archive-link" href="/project/archives/2023/08 ">
+          八月 2023 
+          <div class="archive-count">22 </div>
+        </a>
+      
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">最新文章</h3>
+      <ul>
+        
+          <a class="recent-link" href="/project/2023/08/09/Lenovo%E5%9B%BA%E4%BB%B6%E4%B8%AD%E7%9A%84SMM-callout%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="Lenovo固件中的SMM callout漏洞利用" >
+            <div class="recent-link-text">
+              Lenovo固件中的SMM callout漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%88%A9%E7%94%A8DMA%E6%94%BB%E5%87%BB%E7%AA%81%E7%A0%B4UEFI%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6/" title="利用DMA攻击突破UEFI安全机制" >
+            <div class="recent-link-text">
+              利用DMA攻击突破UEFI安全机制
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/UEFI-%E5%BC%95%E5%AF%BC%E8%84%9A%E6%9C%AC%E8%A1%A8%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="UEFI 引导脚本表漏洞利用" >
+            <div class="recent-link-text">
+              UEFI 引导脚本表漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%9F%BA%E4%BA%8EUEFI%E5%B9%B3%E5%8F%B0%E7%9A%84SMM%E5%90%8E%E9%97%A8%E6%9E%84%E5%BB%BA/" title="基于UEFI平台的SMM后门构建" >
+            <div class="recent-link-text">
+              基于UEFI平台的SMM后门构建
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/P4wnP1%E9%85%8D%E7%BD%AE%E4%B8%8E%E4%BD%BF%E7%94%A8/" title="P4wnP1配置与使用" >
+            <div class="recent-link-text">
+              P4wnP1配置与使用
+            </div>
+          </a>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+  </div>
+</sidebar>
+    </div>
+    <div id="content-body">
+       
+
+<article id="post-CSM兼容的OVMF制作" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  
+    
+   
+  <div class="article-inner">
+    <div class="article-main">
+      <header class="article-header">
+        
+<div class="main-title-bar">
+  <div class="main-title-dot"></div>
+  
+    
+      <h1 class="p-name article-title" itemprop="headline name">
+        CSM兼容的OVMF制作
+      </h1>
+    
+  
+</div>
+
+        <div class='meta-info-bar'>
+          <div class="meta-info">
+  <time class="dt-published" datetime="2023-08-09T07:39:42.000Z" itemprop="datePublished">2023-08-09</time>
+</div>
+          <div class="need-seperator meta-info">
+            <div class="meta-cate-flex">
+  
+  <a class="meta-cate-link" href="/project/categories/UEFI%E5%9B%BA%E4%BB%B6%E5%AE%89%E5%85%A8/">UEFI固件安全</a>
+   
+</div>
+  
+          </div>
+          <div class="wordcount need-seperator meta-info">
+            731 词 
+          </div>
+        </div>
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/OVMF%E7%BC%96%E8%AF%91/" rel="tag">OVMF编译</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/UEFI/" rel="tag">UEFI</a></li></ul>
+
+      </header>
+      <div class="e-content article-entry" itemprop="articleBody">
+        
+          <p>自己编译半天不如直接用官方现成的:)</p>
+<span id="more"></span>
+
+<h1 id="制作CSM兼容OVMF"><a href="#制作CSM兼容OVMF" class="headerlink" title="制作CSM兼容OVMF"></a>制作CSM兼容OVMF</h1><p>环境：</p>
+<ul>
+<li>ubuntu 22.04</li>
+<li>gcc11</li>
+<li>python3.10.4</li>
+</ul>
+<p>获取edk2源码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/tianocore/edk2.git</span><br><span class="line">cd edk2</span><br><span class="line">git submodule update --init</span><br></pre></td></tr></table></figure>
+
+<p>注意一定要等待子模块也克隆成功，如有更新，使用下面的命令获取更新：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd edk2</span><br><span class="line">git pull</span><br><span class="line">git submodule update</span><br></pre></td></tr></table></figure>
+
+<p>安装依赖：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install build-essential uuid-dev iasl git nasm  python-is-python3 make libncurses5-dev libncursesw5-dev</span><br></pre></td></tr></table></figure>
+
+<p>安装BaseTools：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd edk2/BaseTools</span><br><span class="line">make -C ./</span><br></pre></td></tr></table></figure>
+
+<p>edksetup：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd edk2</span><br><span class="line">./edksetup.sh</span><br></pre></td></tr></table></figure>
+
+<p>构建Csm16.bin模块，获取seabios源码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://git.seabios.org/seabios.git</span><br><span class="line">cd seabios</span><br></pre></td></tr></table></figure>
+
+<p>编辑.config文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><span class="line">#</span><br><span class="line"># Automatically generated file; DO NOT EDIT.</span><br><span class="line"># SeaBIOS Configuration</span><br><span class="line">#</span><br><span class="line"> </span><br><span class="line">#</span><br><span class="line"># General Features</span><br><span class="line">#</span><br><span class="line"># CONFIG_COREBOOT is not set</span><br><span class="line"># CONFIG_QEMU is not set</span><br><span class="line">CONFIG_CSM=y</span><br><span class="line">CONFIG_QEMU_HARDWARE=y</span><br><span class="line">CONFIG_THREADS=y</span><br><span class="line">CONFIG_RELOCATE_INIT=y</span><br><span class="line">CONFIG_BOOTMENU=y</span><br><span class="line">CONFIG_BOOTSPLASH=y</span><br><span class="line">CONFIG_BOOTORDER=y</span><br><span class="line">CONFIG_HOST_BIOS_GEOMETRY=y</span><br><span class="line">CONFIG_ENTRY_EXTRASTACK=y</span><br><span class="line">CONFIG_MALLOC_UPPERMEMORY=y</span><br><span class="line">CONFIG_ROM_SIZE=0</span><br><span class="line"> </span><br><span class="line">#</span><br><span class="line"># Hardware support</span><br><span class="line">#</span><br><span class="line">CONFIG_ATA=y</span><br><span class="line"># CONFIG_ATA_DMA is not set</span><br><span class="line"># CONFIG_ATA_PIO32 is not set</span><br><span class="line">CONFIG_AHCI=y</span><br><span class="line">CONFIG_SDCARD=y</span><br><span class="line">CONFIG_VIRTIO_BLK=y</span><br><span class="line">CONFIG_VIRTIO_SCSI=y</span><br><span class="line">CONFIG_PVSCSI=y</span><br><span class="line">CONFIG_ESP_SCSI=y</span><br><span class="line">CONFIG_LSI_SCSI=y</span><br><span class="line">CONFIG_MEGASAS=y</span><br><span class="line">CONFIG_MPT_SCSI=y</span><br><span class="line">CONFIG_FLOPPY=y</span><br><span class="line">CONFIG_FLASH_FLOPPY=y</span><br><span class="line">CONFIG_NVME=y</span><br><span class="line">CONFIG_PS2PORT=y</span><br><span class="line">CONFIG_USB=y</span><br><span class="line">CONFIG_USB_UHCI=y</span><br><span class="line">CONFIG_USB_OHCI=y</span><br><span class="line">CONFIG_USB_EHCI=y</span><br><span class="line">CONFIG_USB_XHCI=y</span><br><span class="line">CONFIG_USB_MSC=y</span><br><span class="line">CONFIG_USB_UAS=y</span><br><span class="line">CONFIG_USB_HUB=y</span><br><span class="line">CONFIG_USB_KEYBOARD=y</span><br><span class="line">CONFIG_USB_MOUSE=y</span><br><span class="line">CONFIG_SERIAL=y</span><br><span class="line">CONFIG_SERCON=y</span><br><span class="line">CONFIG_LPT=y</span><br><span class="line">CONFIG_RTC_TIMER=y</span><br><span class="line">CONFIG_HARDWARE_IRQ=y</span><br><span class="line">CONFIG_PMTIMER=y</span><br><span class="line">CONFIG_TSC_TIMER=y</span><br><span class="line"> </span><br><span class="line">#</span><br><span class="line"># BIOS interfaces</span><br><span class="line">#</span><br><span class="line">CONFIG_DRIVES=y</span><br><span class="line">CONFIG_CDROM_BOOT=y</span><br><span class="line">CONFIG_CDROM_EMU=y</span><br><span class="line">CONFIG_PCIBIOS=y</span><br><span class="line">CONFIG_APMBIOS=y</span><br><span class="line">CONFIG_PNPBIOS=y</span><br><span class="line">CONFIG_OPTIONROMS=y</span><br><span class="line">CONFIG_PMM=y</span><br><span class="line">CONFIG_BOOT=y</span><br><span class="line">CONFIG_KEYBOARD=y</span><br><span class="line">CONFIG_KBD_CALL_INT15_4F=y</span><br><span class="line">CONFIG_MOUSE=y</span><br><span class="line">CONFIG_S3_RESUME=y</span><br><span class="line">CONFIG_VGAHOOKS=y</span><br><span class="line"># CONFIG_DISABLE_A20 is not set</span><br><span class="line">CONFIG_TCGBIOS=y</span><br><span class="line"> </span><br><span class="line">#</span><br><span class="line"># VGA ROM</span><br><span class="line">#</span><br><span class="line">CONFIG_NO_VGABIOS=y</span><br><span class="line"># CONFIG_VGA_GEODEGX2 is not set</span><br><span class="line"># CONFIG_VGA_GEODELX is not set</span><br><span class="line"># CONFIG_BUILD_VGABIOS is not set</span><br><span class="line">CONFIG_VGA_EXTRA_STACK_SIZE=512</span><br><span class="line"> </span><br><span class="line">#</span><br><span class="line"># Debugging</span><br><span class="line">#</span><br><span class="line">CONFIG_DEBUG_LEVEL=1</span><br><span class="line"># CONFIG_DEBUG_SERIAL is not set</span><br><span class="line"># CONFIG_DEBUG_SERIAL_MMIO is not set</span><br><span class="line">CONFIG_DEBUG_IO=y</span><br></pre></td></tr></table></figure>
+
+<p>运行<code>make</code>，生成out&#x2F;Csm16.bin文件:</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230222145946275.png" alt="image-20230222145946275"></p>
+<p>复制Csm16.bin文件到edk2目录下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp out/Csm16.bin ~/edk2/OvmfPkg/Csm/Csm16/</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>经测试，仅Arch linux 1.16.0-3-3版本构建的Csm16.bin才能正常引导win7</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230221152531592.png" alt="image-20230221152531592"></p>
+<p>否则全都显示无法读取boot disk：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230222151731988.png" alt="image-20230222151731988"></p>
+</blockquote>
+<p>编译支持CSM的OVMF：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd edk2</span><br><span class="line">OvmfPkg/build.sh -a X64 -b RELEASE -t GCC5 -D NETWORK_IP6_ENABLE -D TPM_ENABLE -D TLS_ENABLE -D HTTP_BOOT_ENABLE -D CSM_ENABLE -D FD_SIZE_2MB</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230220175819842.png" alt="image-20230220175819842"></p>
+<h2 id="OVMF-Flash布局"><a href="#OVMF-Flash布局" class="headerlink" title="OVMF Flash布局"></a>OVMF Flash布局</h2><p>OVMF支持构建1MB、2MB和4MB的固件文件，对应编译选项为：<code>-D FD_SIZE_1MB</code>、<code>-D FD_SIZE_2MB</code>、<code>-D FD_SIZE_4MB</code></p>
+<p>1MB和2MB的固件布局如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------------- 4GB (0x100000000)</span><br><span class="line">| VTF0 (16-bit reset code) and OVMF SEC</span><br><span class="line">| (SECFV, 208KB/0x34000)</span><br><span class="line">+--------------------------------------- varies based on flash size</span><br><span class="line">|</span><br><span class="line">| Compressed main firmware image</span><br><span class="line">| (FVMAIN_COMPACT)</span><br><span class="line">|</span><br><span class="line">+--------------------------------------- base + 0x20000</span><br><span class="line">| Fault-tolerant write (FTW)</span><br><span class="line">| Spare blocks (64KB/0x10000)</span><br><span class="line">+--------------------------------------- base + 0x10000</span><br><span class="line">| FTW Work block (4KB/0x1000)</span><br><span class="line">+--------------------------------------- base + 0x0f000</span><br><span class="line">| Event log area (4KB/0x1000)</span><br><span class="line">+--------------------------------------- base + 0x0e000</span><br><span class="line">| Non-volatile variable storage</span><br><span class="line">| area (56KB/0xe000)</span><br><span class="line">+--------------------------------------- base address</span><br></pre></td></tr></table></figure>
+
+<p>4MB的固件布局如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">+--------------------------------------- base + 0x400000 (4GB/0x100000000)</span><br><span class="line">| VTF0 (16-bit reset code) and OVMF SEC</span><br><span class="line">| (SECFV, 208KB/0x34000)</span><br><span class="line">+--------------------------------------- base + 0x3cc000</span><br><span class="line">|</span><br><span class="line">| Compressed main firmware image</span><br><span class="line">| (FVMAIN_COMPACT, 3360KB/0x348000)</span><br><span class="line">|</span><br><span class="line">+--------------------------------------- base + 0x84000</span><br><span class="line">| Fault-tolerant write (FTW)</span><br><span class="line">| Spare blocks (264KB/0x42000)</span><br><span class="line">+--------------------------------------- base + 0x42000</span><br><span class="line">| FTW Work block (4KB/0x1000)</span><br><span class="line">+--------------------------------------- base + 0x41000</span><br><span class="line">| Event log area (4KB/0x1000)</span><br><span class="line">+--------------------------------------- base + 0x40000</span><br><span class="line">| Non-volatile variable storage</span><br><span class="line">| area (256KB/0x40000)</span><br><span class="line">+--------------------------------------- base address (0xffc00000)</span><br></pre></td></tr></table></figure>
+
+<p>编译成功，输出文件OVMF_CODE.fd，支持CSM模式及qemu引导：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230222152022613.png" alt="image-20230222152022613"></p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230220175859777.png" alt="image-20230220175859777"></p>
+<p>用该固件成功引导win7 MBR，进入引导管理器：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230222151831529.png" alt="image-20230222151831529"></p>
+<p>启动脚本：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/sh</span></span><br><span class="line">/usr/bin/qemu-system-x86_64 \</span><br><span class="line">-machine type=q35,accel=kvm:tcg \</span><br><span class="line">-cpu host \</span><br><span class="line">-smp cpus=2,cores=2,threads=1,sockets=1 \</span><br><span class="line">-boot menu=on \</span><br><span class="line">-bios OVMF_CODE_seabios.fd \</span><br><span class="line">-m 2G \</span><br><span class="line">-k en-us \</span><br><span class="line">-name &quot;Microsoft Windows 7 MBR&quot; \</span><br><span class="line">-drive file=&quot;win7x64-mbr.img&quot;,if=virtio,index=0,media=disk,cache=writeback,format=qcow2 \</span><br><span class="line">-usb \</span><br><span class="line">-net none \</span><br><span class="line">-monitor stdio \</span><br><span class="line">-rtc base=localtime \</span><br><span class="line">-serial file:serial-ok.log \</span><br><span class="line">-debugcon file:debug-ok.log -global isa-debugcon.iobase=0x402</span><br></pre></td></tr></table></figure>
+
+<h2 id="现成的"><a href="#现成的" class="headerlink" title="现成的"></a>现成的</h2><p>ArchLinux提供多个编译好的OVMF，可直接使用：</p>
+<p><a target="_blank" rel="noopener" href="https://archlinux.org/packages/extra/any/edk2-ovmf/">https://archlinux.org/packages/extra/any/edk2-ovmf/</a></p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230221142824711.png" alt="image-20230221142824711"></p>
+
+        
+      </div>
+
+         
+    </div>
+    
+     
+  </div>
+  
+    
+<nav id="article-nav">
+  <a class="article-nav-btn left "
+    
+      href="/project/2023/08/09/MBR-Bootkit%E5%8E%9F%E7%90%86/"
+      title="MBR Bootkit原理"
+     >
+    <i class="fa-solid fa-angle-left"></i>
+    <p class="title-text">
+      
+        MBR Bootkit原理
+        
+    </p>
+  </a>
+  <a class="article-nav-btn right "
+    
+      href="/project/2023/08/09/lenovo-510S-08IKL%E5%9B%BA%E4%BB%B6%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E8%AE%B0%E5%BD%95/"
+      title="lenovo 510S-08IKL固件安全分析记录"
+     >
+
+    <p class="title-text">
+      
+        lenovo 510S-08IKL固件安全分析记录
+        
+    </p>
+    <i class="fa-solid fa-angle-right"></i>
+  </a>
+</nav>
+
+
+  
+</article>
+
+
+  
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <div id="comment-card" class="comment-card">
+    <div class="main-title-bar">
+      <div class="main-title-dot"></div>
+      <div class="main-title">留言 </div>
+    </div>
+    <div id="vcomments"></div>
+  </div>
+  <script>
+      new Valine({"enable":true,"appId":"bC8HOSKa4QB7G6TfuGWB97i4-gzGzoHsz","appKey":"aoDFuSX5vWN8Xn1ukZpJ50be","placeholder":"写下你的评论...","pageSize":10,"highlight":true,"serverURLs":null,"el":"#vcomments"});
+  </script>
+ 
+    </div>
+    <div id="footer-wrapper">
+      <footer id="footer">
+  
+  <div id="footer-info" class="inner">
+    
+    &copy; 2023 Edvison<br>
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> & Theme <a target="_blank" rel="noopener" href="https://github.com/saicaca/hexo-theme-vivia">Vivia</a>
+  </div>
+</footer>
+
+    </div>
+    <div class="back-to-top-wrapper">
+    <button id="back-to-top-btn" class="back-to-top-btn" onclick="topFunction()">
+        <span class="material-symbols-rounded">keyboard_arrow_up</span>
+    </button>
+</div>
+
+<script>
+    function topFunction() {
+        window.scroll({ top: 0, behavior: 'smooth' });
+    }
+    let btn = document.getElementById('back-to-top-btn');
+    function scrollFunction() {
+        if (document.body.scrollTop > 600 || document.documentElement.scrollTop > 600) {
+            btn.style.opacity = 1;
+        } else {
+            btn.style.opacity = 0;
+        }
+    }
+    window.onscroll = function() {
+        scrollFunction();
+    }
+</script>
+
+  </div>
+  <script src="/project/js/light-dark-switch.js"></script>
+</body>
+</html>

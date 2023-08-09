@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+
+
+<html theme="dark" showBanner="true" hasBanner="true" > 
+<link href="/project/fontawesome/css/fontawesome.css" rel="stylesheet">
+<link href="/project/fontawesome/css/brands.css" rel="stylesheet">
+<link href="/project/fontawesome/css/solid.css" rel="stylesheet">
+<script src="/project/js/color.global.min.js" ></script>
+<script src="/project/js/load-settings.js" ></script>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>CSM原理学习 | Edvison&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="CSM原理学习，只看了一部分感觉有用的协议。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CSM原理学习">
+<meta property="og:url" content="https://edvison.github.io/project/2023/08/09/CSM%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="Edvison&#39;s blog">
+<meta property="og:description" content="CSM原理学习，只看了一部分感觉有用的协议。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230720151740177.png">
+<meta property="article:published_time" content="2023-08-09T07:50:04.000Z">
+<meta property="article:modified_time" content="2023-08-09T07:52:21.634Z">
+<meta property="article:author" content="edvison">
+<meta property="article:tag" content="UEFI">
+<meta property="article:tag" content="CSM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230720151740177.png">
+  
+    <link rel="alternate" href="/project/atom.xml" title="Edvison's blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-192.png" sizes="192x192">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-192.png" sizes="192x192">
+  
+  
+<link rel="stylesheet" href="/project/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  
+  
+    
+<div id="banner" class="">
+  <img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230807175151.png" itemprop="image">
+  <div id="banner-dim"></div>
+</div>
+ 
+   
+  <div id="main-grid" class="shadow   ">
+    <div id="nav" class=""  >
+      <navbar id="navbar">
+  <nav id="title-nav">
+    <a href="/project/">
+      <div id="vivia-logo">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div>Edvison's blog </div>
+    </a>
+  </nav>
+  <nav id="main-nav">
+    
+      <a class="main-nav-link" href="/project/">Home</a>
+    
+      <a class="main-nav-link" href="/project/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/project/about">About</a>
+    
+  </nav>
+  <nav id="sub-nav">
+    <a id="theme-btn" class="nav-icon">
+      <span class="material-symbols-rounded light-mode-icon">wb_sunny</span>
+      <span class="material-symbols-rounded dark-mode-icon">dark_mode</span>
+    </a>
+    
+      <a id="nav-rss-link" class="nav-icon mobile-hide" href="/project/atom.xml" title="RSS 订阅">
+        <span class="material-symbols-rounded rss">rss_feed</span>
+      </a>
+    
+    <a id="nav-search-btn" class="nav-icon" title="搜索" style="display: none;">
+      <span class="material-symbols-rounded">search</span>
+    </a>
+    <div id="nav-menu-btn" class="nav-icon">
+      <span class="material-symbols-rounded">menu</span>
+    </div>
+  </nav>
+</navbar>
+<div id="nav-dropdown" class="hidden">
+  <div id="dropdown-link-list">
+    
+      <a class="nav-dropdown-link" href="/project/">Home</a>
+    
+      <a class="nav-dropdown-link" href="/project/archives">Archives</a>
+    
+      <a class="nav-dropdown-link" href="/project/about">About</a>
+    
+    
+      <a class="nav-dropdown-link" href="/project/atom.xml" title="RSS 订阅">RSS</a>
+     
+    </div>
+</div>
+<script>
+  let dropdownBtn = document.getElementById("nav-menu-btn");
+  let dropdownEle = document.getElementById("nav-dropdown");
+  dropdownBtn.onclick = function() {
+    dropdownEle.classList.toggle("hidden");
+  }
+</script>
+    </div>
+    <div id="sidebar-wrapper">
+      <sidebar id="sidebar">
+  
+    <div class="widget-wrap">
+  <div class="info-card">
+    <div class="avatar">
+      
+        <image src=https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230808155156.png></image>
+      
+      <div class="img-dim"></div>
+    </div>
+    <div class="info">
+      <div class="username">Edvison </div>
+      <div class="dot"></div>
+      <div class="subtitle">flung out of space </div>
+      <div class="link-list">
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://github.com/Edvison" title="github"><i class="fa-brands fa-github"></i></a>
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://weibo.com/u/6038772011" title="weibo"><i class="fa-brands fa-weibo"></i></a>
+         
+      </div>  
+    </div>
+  </div>
+</div>
+
+  
+  <div class="sticky">
+    
+      
+
+
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">分类</h3>
+      <div class="category-box">
+            <a class="category-link" href="/project/categories/UEFI%E5%8E%9F%E7%90%86/">
+                UEFI原理
+                <div class="category-count">3</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/UEFI%E5%9B%BA%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                UEFI固件安全
+                <div class="category-count">6</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/MBR%E5%8E%9F%E7%90%86/">
+                MBR原理
+                <div class="category-count">2</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%BF%BB%E8%AF%91/">
+                翻译
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/Grub2%E5%8E%9F%E7%90%86/">
+                Grub2原理
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/IoT%E5%AE%89%E5%85%A8/">
+                IoT安全
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%A1%AC%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                硬件安全
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/VBIOS%E4%BF%AE%E6%94%B9/">
+                VBIOS修改
+                <div class="category-count">1</div>
+            </a>
+        </div>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">标签</h3>
+      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/CSM/" rel="tag">CSM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/DMA%E6%94%BB%E5%87%BB/" rel="tag">DMA攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/Grub2/" rel="tag">Grub2</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/HID%E6%94%BB%E5%87%BB/" rel="tag">HID攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR/" rel="tag">MBR</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR%E5%90%8E%E9%97%A8/" rel="tag">MBR后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OS-Loader/" rel="tag">OS Loader</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OVMF%E7%BC%96%E8%AF%91/" rel="tag">OVMF编译</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/PCH/" rel="tag">PCH</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM/" rel="tag">SMM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E5%90%8E%E9%97%A8/" rel="tag">SMM后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">SMM漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/UEFI/" rel="tag">UEFI</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/VBIOS/" rel="tag">VBIOS</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/pcie/" rel="tag">pcie</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4/" rel="tag">写保护</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4%E7%AA%81%E7%A0%B4/" rel="tag">写保护突破</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%8E%9F%E7%90%86/" rel="tag">原理</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/" rel="tag">安全启动</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%BC%80%E5%8F%91%E6%9D%BF/" rel="tag">开发板</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/" rel="tag">树莓派</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" rel="tag">漏洞利用</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E6%89%AB%E6%8F%8F/" rel="tag">漏洞扫描</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" rel="tag">环境搭建</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%94%B5%E6%BA%90%E6%95%85%E9%9A%9C/" rel="tag">电源故障</a></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">归档</h3>
+      
+      
+        <a class="archive-link" href="/project/archives/2023/08 ">
+          八月 2023 
+          <div class="archive-count">22 </div>
+        </a>
+      
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">最新文章</h3>
+      <ul>
+        
+          <a class="recent-link" href="/project/2023/08/09/Lenovo%E5%9B%BA%E4%BB%B6%E4%B8%AD%E7%9A%84SMM-callout%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="Lenovo固件中的SMM callout漏洞利用" >
+            <div class="recent-link-text">
+              Lenovo固件中的SMM callout漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%88%A9%E7%94%A8DMA%E6%94%BB%E5%87%BB%E7%AA%81%E7%A0%B4UEFI%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6/" title="利用DMA攻击突破UEFI安全机制" >
+            <div class="recent-link-text">
+              利用DMA攻击突破UEFI安全机制
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/UEFI-%E5%BC%95%E5%AF%BC%E8%84%9A%E6%9C%AC%E8%A1%A8%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="UEFI 引导脚本表漏洞利用" >
+            <div class="recent-link-text">
+              UEFI 引导脚本表漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%9F%BA%E4%BA%8EUEFI%E5%B9%B3%E5%8F%B0%E7%9A%84SMM%E5%90%8E%E9%97%A8%E6%9E%84%E5%BB%BA/" title="基于UEFI平台的SMM后门构建" >
+            <div class="recent-link-text">
+              基于UEFI平台的SMM后门构建
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/P4wnP1%E9%85%8D%E7%BD%AE%E4%B8%8E%E4%BD%BF%E7%94%A8/" title="P4wnP1配置与使用" >
+            <div class="recent-link-text">
+              P4wnP1配置与使用
+            </div>
+          </a>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+  </div>
+</sidebar>
+    </div>
+    <div id="content-body">
+       
+
+<article id="post-CSM原理学习" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  
+    
+   
+  <div class="article-inner">
+    <div class="article-main">
+      <header class="article-header">
+        
+<div class="main-title-bar">
+  <div class="main-title-dot"></div>
+  
+    
+      <h1 class="p-name article-title" itemprop="headline name">
+        CSM原理学习
+      </h1>
+    
+  
+</div>
+
+        <div class='meta-info-bar'>
+          <div class="meta-info">
+  <time class="dt-published" datetime="2023-08-09T07:50:04.000Z" itemprop="datePublished">2023-08-09</time>
+</div>
+          <div class="need-seperator meta-info">
+            <div class="meta-cate-flex">
+  
+  <a class="meta-cate-link" href="/project/categories/UEFI%E5%8E%9F%E7%90%86/">UEFI原理</a>
+   
+</div>
+  
+          </div>
+          <div class="wordcount need-seperator meta-info">
+            4.2k 词 
+          </div>
+        </div>
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/CSM/" rel="tag">CSM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/UEFI/" rel="tag">UEFI</a></li></ul>
+
+      </header>
+      <div class="e-content article-entry" itemprop="articleBody">
+        
+          <p>CSM原理学习，只看了一部分感觉有用的协议。</p>
+<span id="more"></span>
+
+
+
+<h1 id="CSM工作原理"><a href="#CSM工作原理" class="headerlink" title="CSM工作原理"></a>CSM工作原理</h1><p>CSM（Compatibility Support Module）可使EFI具备兼容传统BIOS的能力。它负责将EFI下面的相关信息转换成传统BIOS下的信息，并提供在操作系统引导和运行过程中所需的传统BIOS中断服务。此外CSM还使传统Option ROM可以在EFI环境下运行。</p>
+<p>CSM利用Framework完成硬件平台初始化、设备枚举及系统启动路径的选择。EIF中添加了CSM组件——EFI兼容模块（EfiCompatibility），以支持传统操作系统和传统的Option ROMs。</p>
+<p>EfiCompatibility模块、IBV提供的Compatibility 16 BIOS模块、Compatibility 16 SMM模块一起构成了整个CSM。</p>
+<p>下图为CSM工作原理组成图：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230720151740177.png" alt="image-20230720151740177"></p>
+<p><strong>EFI执行过程中，在BDS阶段之前只完成少部分的系统初始化和配置，不显示和执行Option ROM。只有到了BDS阶段，根据以下三种信息确定是否需要调用CSM模块</strong>：</p>
+<ul>
+<li>目标操作系统</li>
+</ul>
+<p>由于传统操作系统（non-EFI-aware）需要调用传统BIOS提供的中断服务。在EFI BIOS中必须调用CSM模块以支持传统操作系统以及在引导传统操作系统过程中需要执行的传统Option ROM。</p>
+<ul>
+<li>选择启动的设备</li>
+</ul>
+<p>如果一个OS启动设备本身依赖于传统Option ROM，不管目标操作系统是传统操作系统还是EFI原生的操作系统，都需要调用CSM模块。</p>
+<ul>
+<li>设备的初始化策略</li>
+</ul>
+<p>如果系统的启动策略是初始化所有的设备，只有其中有一个非引导设备（non-boot device）涉及到传统Option ROM，都必须执行CSM模块以支持该设备。</p>
+<h1 id="CSM架构"><a href="#CSM架构" class="headerlink" title="CSM架构"></a>CSM架构</h1><p>CSM模块使得EFI BIOS具备了加载引导传统操作系统和执行传统Option ROM的能力。它主要包括以下五个组件：</p>
+<ul>
+<li>EFI兼容模块（EfiCompatibility, 简称CSM32）</li>
+<li>传统BIOS兼容模块（Compatibility 16 BIOS，简称CSM16）</li>
+<li>传统SMM驱动兼容模块（Compatibility 16 SMM）</li>
+<li>保护模式&#x2F;实模式切换模块（Thunk and Reverse Thunk）</li>
+<li>传统Option ROM</li>
+</ul>
+<h2 id="EFI兼容模块（CSM32）"><a href="#EFI兼容模块（CSM32）" class="headerlink" title="EFI兼容模块（CSM32）"></a>EFI兼容模块（CSM32）</h2><p>EFI兼容模块运行在32位保护模式下，和EFI本身进行交互，调用执行由CSM16提供的16位实模式下的函数接口及传统BIOS中断服务。CSM32模块由Framework提供，主要包括以下四种类型的EFI驱动：</p>
+<ul>
+<li>硬件平台无关的驱动</li>
+<li>平台无关的传统组件驱动，如传统的8259可编程中断控制器驱动</li>
+<li>芯片组相关的驱动，如ICH7</li>
+<li>硬件平台相关驱动，如PCI中断路由驱动</li>
+</ul>
+<p>CSM32主要由以下几个协议组成：</p>
+<ul>
+<li>Legacy BIOS protocol: 是CSM中最主要的协议，与硬件平台无关。</li>
+<li>Legacy BIOS Platform protocol: 与平台相关，Chipset相同但硬件平台不同，该协议内部驱动实现会有差异。</li>
+<li>Legacy Region Protocol：与Chipset相关，用于对内存区域0xc0000-0xfffff的读写控制。</li>
+<li>Legacy 8259 Protocol：和硬件平台、chipset都无关，可以在32位保护模式或者16位实模式下对8259可编程中断控制器进行控制、实现中断屏蔽、电平触发或边沿触发工作模式编程。</li>
+<li>Legacy Interrupt protocol：依赖与具体的chipset，用于给PCI设备分配中断路由。</li>
+</ul>
+<p>除上面几个协议提供的功能之外，EFI兼容模块还包括许多模拟传统中断服务的驱动，如UGA设备中断INT 10，键盘中断INT 16以及块设备的I&#x2F;O访问中断服务。</p>
+<p>一些Option ROM运行时需要使用INT 10，因此UGA驱动需要运行在VGA模式以支持INT 10。该驱动将EFI下的控制台输出数据转化为对应的VGA格式。该驱动基于以下假设：所有的INT 10中断服务功能都已实现，也就是说Option ROM可以直接访问VGA所有寄存器及显存。UGA设备支持VGA模式并且根据要求UGA和VGA两种模式可以相互切换。</p>
+<blockquote>
+<p>UGA採用USB輸入，VGA&#x2F;DVI&#x2F;HDMI接口輸出。通過主機USB接口，將音&#x2F;視頻信號傳輸到顯示器（VGA&#x2F;DVI&#x2F;HDMI等接口）</p>
+<p>UGA是由wavlink（睿因）公司於2003年在全球發布的一款通過USB接口轉接顯示器接口的硬體設備，其英文名全稱為USB Graphic Adapter，簡稱USB顯示卡，或USB外置（多功能）顯示卡。UGA採用USB輸入，VGA&#x2F;DVI&#x2F;HDMI接口輸出。通過主機USB接口，將音&#x2F;視頻信號傳輸到顯示器（VGA&#x2F;DVI&#x2F;HDMI等接口）。</p>
+</blockquote>
+<blockquote>
+<p>UGA又稱為UXGA，一種視頻制式。解析度剛好是 VGA的四倍。UXGA 是許多 4:3 的 20” 和 21” 螢幕的析度，不過隨著 4:3 螢幕愈來愈少見，要買到這個解析度的螢幕是愈來愈困難了。</p>
+</blockquote>
+<h3 id="Legacy-BIOS-Module"><a href="#Legacy-BIOS-Module" class="headerlink" title="Legacy BIOS Module"></a>Legacy BIOS Module</h3><p>Legacy BIOS Module是整个CSM的主模块。其主要功能包括：</p>
+<ul>
+<li>初始化它本身并加载CSM16模块</li>
+<li>确定启动设备</li>
+<li>加载CSM32中的其他驱动程序</li>
+<li>加载保护模式&#x2F;实模式切换模块</li>
+<li>初始化和CSM16交互的接口</li>
+<li>查找、加载和调用板载&#x2F;非板载的Option ROM</li>
+<li>加载引导OS</li>
+</ul>
+<p>Legacy BIOS Module分析当前系统的数据，调用EFI APIs来手机CSM16 所需的系统信息，并将这些信息转化为CSM16的数据结构。CSM16利用这些数据结构初始化位于系统内存0x400-0x500的传统BIOS数据区（BDA）、扩展BIOS数据区（EBDA）和CMOS。</p>
+<p>Legacy BIOS protocol APIs也会使用这些数据对传统设备和传统资源进行重置。</p>
+<p>EFI对硬件设备的枚举、配置是比较简单、低级的，它不会对串口或并口等传统设备分配IRQ（中断请求）。但CSM16要求这些传统设备具备正确的IRQ，因此Legacy BIOS代码需要对这些传统设备进行重新配置来满足要求。</p>
+<p>Legacy BIOS protocol有两种实现方式：精简版和完全版。精简版适用于通过传统Option ROM引导EFI原生操作系统的应用。而需要引导传统操作系统的应用，则使用完全版。</p>
+<h3 id="Legacy-BIOS-protocol"><a href="#Legacy-BIOS-protocol" class="headerlink" title="Legacy BIOS protocol"></a>Legacy BIOS protocol</h3><p>Legacy BIOS protocol和Legacy BIOS module的初始化程序构成了整个CSM的基础。</p>
+<p>下表为Legacy BIOS protocol的功能函数：</p>
+<table>
+<thead>
+<tr>
+<th>Functions</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BootUnconventionalDevice()</td>
+<td>用于从非常规设备引导系统，如PARTIES</td>
+</tr>
+<tr>
+<td>CheckPciRom()</td>
+<td>用于检查PCI设备中是否有传统Option ROM，以及检查该设备是否只有传统Option ROM，而没有EFI Option ROM。并检查传统操作系统启动设备的有效性</td>
+</tr>
+<tr>
+<td>CopyLegacyRegion()</td>
+<td>用于EFI下拷贝数据到函数GetLegacyRegion()指定的区域</td>
+</tr>
+<tr>
+<td>FarCall86()</td>
+<td>使32位保护模式下的程序使用长调来调用16位实模式下的程序。和Int86()函数类似，只是把软中断替换成了长调用。</td>
+</tr>
+<tr>
+<td>GetBbsInfo()</td>
+<td>允许外部驱动访问CSM32中的BBS数据结构。该函数主要被BIOS setup调用</td>
+</tr>
+<tr>
+<td>GetLegacyRegion()</td>
+<td>允许在内存区域0xe0000-0xfffff地址段分配内存</td>
+</tr>
+<tr>
+<td>Int86()</td>
+<td>使32位保护模式程序调用16位软中断程序，如INT 16。该函数通过调用Thunk程序切换到16位实模式，将输入参数指定的数据区载入到CPU寄存器，然后执行相应的软中断。中断程序返回后，使用CPU寄存器的值更新数据区，并切换回32位保护模式。</td>
+</tr>
+<tr>
+<td>InstallPciRom()</td>
+<td>将传统Option ROM装载到内存区域0xc0000-0xfffff</td>
+</tr>
+<tr>
+<td>LegacyBoot()</td>
+<td>用于引导传统OS，实现了CSM的大部分主要功能，由于引导传统OS的一些要求，执行该函数可能会关闭EFI相关功能。该函数最终会调用CSM16模式来执行传统INT 19中断服务，如果从选定的设备启动操作系统失败，CSM16会将控制权返回给该函数，在这种情况下，如果原来的EFI环境是保留的，或者在EFI启动和传统启动方式相互切换时EFI环境可以被恢复，则函数LegacyBoot()会将控制权返回给调用者。</td>
+</tr>
+<tr>
+<td>PrepareToBootEfi()</td>
+<td>主要完成EFI原生操作系统的引导环境准备。执行包括给传统引导设备分配驱动号在内的LegacyBoot()函数的部分功能</td>
+</tr>
+<tr>
+<td>ShadowAllLegacyOproms()</td>
+<td>加载运行所有的传统Option ROMs，运行Option Rom前会卸载设备原有的EFI驱动，因此，如果需要，执行完该函数后必须重新连接EFI驱动到设备上</td>
+</tr>
+<tr>
+<td>UpdateKeyboardLedStatus()</td>
+<td>用于把EFI下的键盘LED状态信息同步到传统BIOS数据区。该函数不对键盘进行操作，而是调用CSM16中涉及键盘LED状态的函数来维护键盘灯的状态信息。</td>
+</tr>
+</tbody></table>
+<p>在确定了引导设备列表后，用户选择引导设备（或默认设备）。如果引导到传统OS则BDS调用LegacyBoot()函数，如果引导到支持EFI的OS且传统Option ROMs已初始化，则调用PrepareToBootEfi()函数。</p>
+<h3 id="Leygacy-BIOS-Platform-Protocol"><a href="#Leygacy-BIOS-Platform-Protocol" class="headerlink" title="Leygacy BIOS Platform Protocol"></a>Leygacy BIOS Platform Protocol</h3><p>Leygacy BIOS Platform Protocol可以根据硬件平台的具体配置及OEM要求对CSM进行客制化，其中包含了多个功能函数：</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GetPlatformHandle()</td>
+<td>搜索指定实体的所有句柄，并返回按照优先级分类的特定类型的句柄队列。包括VGA设备句柄、IDE控制器句柄、ISA总线控制器句柄以及USB设备句柄等</td>
+</tr>
+<tr>
+<td>GetPlatformInfo()</td>
+<td>用于获取平台特定的二进制目标文件或数据，包括MP table，OEM特定的16位或32位的映像文件，TPM二进制文件等</td>
+</tr>
+<tr>
+<td>GetRoutionTable()</td>
+<td>为中断路由表获取平台相关的PCI中断路由信息</td>
+</tr>
+<tr>
+<td>PlatformHooks()</td>
+<td>执行平台相关的一些操作。如完成扫描Option ROM之前的一些特殊处理，映射物理设备无关的Option ROM（PXE驱动及BIS），以及Option ROM初始化后的一些处理等</td>
+</tr>
+<tr>
+<td>PrepareToBoot()</td>
+<td>完成传统OS的引导</td>
+</tr>
+<tr>
+<td>SmmInit()</td>
+<td>检查EFI固件卷中是否有16位模式下的SMM驱动模块，如有，则使用EFI SMM驱动注册CSM16 SMM模块。</td>
+</tr>
+<tr>
+<td>TranslatePirq()</td>
+<td>将中断信息写到对应的芯片组中断路由寄存器中，同时返回指定设备可用的中断号</td>
+</tr>
+</tbody></table>
+<h3 id="Legacy-Region-Protocol"><a href="#Legacy-Region-Protocol" class="headerlink" title="Legacy Region Protocol"></a>Legacy Region Protocol</h3><p>Legacy Region Protocol与Chipset相关，用于对内存区域0xc0000-0xfffff的读写控制。</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Decode()</td>
+<td>完成对芯片组的初始化，使能或禁止对该内存区域的解码</td>
+</tr>
+<tr>
+<td>Lock()</td>
+<td>将指定区域（0xc0000-0xfffff）设为只读（写保护）</td>
+</tr>
+<tr>
+<td>BootLock()</td>
+<td>在引导传统OS之前调用，该函数将指定区域锁定（写保护）以防止误操作其他地址段（aliased addresses）</td>
+</tr>
+<tr>
+<td>Unlock()</td>
+<td>将指定内存区域设为可读写，同时防止误操作其他地址段</td>
+</tr>
+</tbody></table>
+<h3 id="Legacy-8259-Protocol"><a href="#Legacy-8259-Protocol" class="headerlink" title="Legacy 8259 Protocol"></a>Legacy 8259 Protocol</h3><p>该协议可以在32位保护模式或者16位实模式下对8259可编程中断控制器进行控制、实现中断屏蔽、电平触发或边沿触发工作模式编程。</p>
+<blockquote>
+<p>8259<em>可编程中断控制器</em>(PIC) 是构成 x86 架构的最重要芯片之一。没有它，x86 架构就不是中断驱动的架构。</p>
+<p>8259A 是原始<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/IBM_PC">IBM PC</a>和<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/IBM_PC_AT">IBM PC AT中</a><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/ISA_bus">ISA 总线</a>的中断控制器。</p>
+<p>8259A的功能是管理硬件中断并将它们发送到适当的系统中断。这使得系统能够响应设备需求而不会损失时间（例如，轮询设备）。</p>
+<p>值得注意的是，<a target="_blank" rel="noopener" href="https://wiki.osdev.org/APIC">APIC</a>已经在更现代的系统中取代了 8259 PIC，特别是那些具有多个内核&#x2F;处理器的系统。</p>
+<p>虽然 8259A 接口不再是一个单独的芯片，但仍然由现代<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/X86">x86主板上的</a><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Platform_Controller_Hub">平台控制器集线器</a>或<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Southbridge_(computing)">南桥</a>芯片组提供。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SetVectorBase()</td>
+<td>初始化主&#x2F;从8259可编程中断控制器的中断向量基址。在EFI环境下，主8259控制器的中断向量基址设为0x1A0（INT 68），从8259控制器的中断向量基址设为0x1C0（INT 70）。在16位实模式下，主8259控制器的中断向量基址设为0x20（INT 08），从8259控制器的中断向量基址设为0x1C0（INT 70）。不同的中断向量基址可以防止中断和CPU异常被覆盖。</td>
+</tr>
+<tr>
+<td>GetMask()</td>
+<td>用来获取EFI环境下或16位实模式下当前主&#x2F;从8259控制器的中断屏蔽信息及中断触发方式（边沿触发or电平触发）</td>
+</tr>
+<tr>
+<td>SetMask()</td>
+<td>完成在32位EFI环境下或16位传统环境下设置主&#x2F;从8259控制器的中断屏蔽信息及中断触发方式</td>
+</tr>
+<tr>
+<td>SetMode()</td>
+<td>完成在32位EFI环境下或16位传统环境下设置主&#x2F;从8259控制器的中断屏蔽信息及中断触发方式。同一模式下，不应多次调用该函数，应使用SetMask()函数</td>
+</tr>
+<tr>
+<td>GetVector()</td>
+<td>完成将某一硬中断号转换为对应的软中断号，如EFI下将IRQ0转换为INT 68，或传统环境下IRQ0 转换为INT 08</td>
+</tr>
+<tr>
+<td>EnableIrq()</td>
+<td>在EFI下使能某一个硬中断，非CSM驱动可以调用</td>
+</tr>
+<tr>
+<td>DisableIrq()</td>
+<td>在EFI下禁用某一个硬中断，非CSM驱动可以调用</td>
+</tr>
+<tr>
+<td>GetinterruptLine()</td>
+<td>读取指定PCI设备的配置空间并返回分配给该设备的中断号</td>
+</tr>
+<tr>
+<td>EndOfInterrupt()</td>
+<td>下发中断结束（EOI）命令给中断控制器</td>
+</tr>
+</tbody></table>
+<h3 id="Legacy-Interrup-Protocol"><a href="#Legacy-Interrup-Protocol" class="headerlink" title="Legacy Interrup Protocol"></a>Legacy Interrup Protocol</h3><p>该协议用于对PCI中断的编程控制。</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GetNumberPirqs()</td>
+<td>返回chipset支持的所有PIRQ（PCI IRQ）个数</td>
+</tr>
+<tr>
+<td>GetLocation()</td>
+<td>返回支持该协议的PCI设备的位置</td>
+</tr>
+<tr>
+<td>ReadPirq()</td>
+<td>读取指定PIRQ寄存器并返回该寄存器的值</td>
+</tr>
+<tr>
+<td>WritePirq()</td>
+<td>填写数据到指定的PIRQ寄存器</td>
+</tr>
+</tbody></table>
+<h2 id="传统BIOS兼容模块（CSM16）"><a href="#传统BIOS兼容模块（CSM16）" class="headerlink" title="传统BIOS兼容模块（CSM16）"></a>传统BIOS兼容模块（CSM16）</h2><p>CSM16模块运行在16位实模式下，提供传统BIOS中断服务调用。主要由INT13、INT19、INT15等中断服务程序组成。除中断服务程序外，CSM16还包括和CSM32交互的接口程序。CSM16一般由IBV提供。</p>
+<p>CSM16模块可以看成是一个没有POST和Setup配置界面的传统BIOS。CSM16模块设计的目的是希望使CSM16模块在所有平台都通用。它不会配置任何底层硬件，但可以通过传统BIOS的接口来控制一些传统硬件。</p>
+<p>CSM16模块包含全部的runtime服务和传统BIOS所需的软中断和硬中断服务程序。模块还必须支持与传统BIOS兼容的BIOS数据区（BDA：BIOS Data Area）、扩展数据区（EBDA：Extend BDA）以及一些中断服务在F000内存段的固定入口地址。另外还提供一些用于EFI和CSM16之间互相通信的16位程序。</p>
+<h2 id="BIOS中断服务"><a href="#BIOS中断服务" class="headerlink" title="BIOS中断服务"></a>BIOS中断服务</h2><p>下表为CSM16模块提供的传统中断服务：</p>
+<table>
+<thead>
+<tr>
+<th>INT</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x02</td>
+<td>NMI不可屏蔽中断</td>
+</tr>
+<tr>
+<td>0x05</td>
+<td>屏幕输出</td>
+</tr>
+<tr>
+<td>0x08</td>
+<td>系统时钟中断（IRQ0）</td>
+</tr>
+<tr>
+<td>0x09</td>
+<td>键盘中断（IRQ1）</td>
+</tr>
+<tr>
+<td>0x10</td>
+<td>显卡（显示）服务，由Video OpROM提供</td>
+</tr>
+<tr>
+<td>0x11</td>
+<td>设备检测</td>
+</tr>
+<tr>
+<td>0x12</td>
+<td>基本内存大小检测</td>
+</tr>
+<tr>
+<td>0x13</td>
+<td>磁盘中断服务</td>
+</tr>
+<tr>
+<td>0x14</td>
+<td>串口通讯服务</td>
+</tr>
+<tr>
+<td>0x15</td>
+<td>系统服务</td>
+</tr>
+<tr>
+<td>0x16</td>
+<td>键盘服务</td>
+</tr>
+<tr>
+<td>0x17</td>
+<td>并口打印机服务</td>
+</tr>
+<tr>
+<td>0x18</td>
+<td>系统启动管理服务</td>
+</tr>
+<tr>
+<td>0x19</td>
+<td>系统引导程序服务</td>
+</tr>
+<tr>
+<td>0x1A</td>
+<td>系统时间服务</td>
+</tr>
+<tr>
+<td>0x1B</td>
+<td>程序中断服务</td>
+</tr>
+<tr>
+<td>0x1C</td>
+<td>定时器服务</td>
+</tr>
+<tr>
+<td>0x1D</td>
+<td>显示参数</td>
+</tr>
+<tr>
+<td>0x1E</td>
+<td>软驱控制参数</td>
+</tr>
+<tr>
+<td>0x1F</td>
+<td>字符矩阵</td>
+</tr>
+<tr>
+<td>0x40</td>
+<td>软盘服务</td>
+</tr>
+<tr>
+<td>0x41</td>
+<td>主硬盘控制器参数</td>
+</tr>
+<tr>
+<td>0x46</td>
+<td>从硬盘控制器参数</td>
+</tr>
+<tr>
+<td>0x70</td>
+<td>RTC中断（IRQ8）</td>
+</tr>
+<tr>
+<td>0x74</td>
+<td>PS2鼠标中断（IRQ12）</td>
+</tr>
+<tr>
+<td>0x75</td>
+<td>数字协处理器中断（IRQ13）</td>
+</tr>
+<tr>
+<td>0x76</td>
+<td>主IDE硬盘控制器中断（IRQ14）</td>
+</tr>
+<tr>
+<td>0x77</td>
+<td>从IDE硬盘控制器中断（IRQ15）</td>
+</tr>
+</tbody></table>
+<h2 id="传统SMM兼容模块-Compatibility-16-SMM"><a href="#传统SMM兼容模块-Compatibility-16-SMM" class="headerlink" title="传统SMM兼容模块(Compatibility 16 SMM)"></a>传统SMM兼容模块(Compatibility 16 SMM)</h2><p>Compatibility 16 SMM提供传统的SMM服务，作为EFI SMM驱动的补充，是可选的，由IBV或OEM厂家提供。</p>
+<h2 id="保护模式-实模式切换模块（Thunk-and-Reverse-Thunk）"><a href="#保护模式-实模式切换模块（Thunk-and-Reverse-Thunk）" class="headerlink" title="保护模式&#x2F;实模式切换模块（Thunk and Reverse Thunk）"></a>保护模式&#x2F;实模式切换模块（Thunk and Reverse Thunk）</h2><p>该模块提供了保护模式&#x2F;实模式相互转换的驱动。CSM32通过Thunk程序从EFI 32位保护模式切换到传统的16位实模式，CSM16通过ReverseThunk从16位实模式切换回32位保护模式。该模块由Framework提供。</p>
+<h2 id="传统Option-ROM（Legacy-Option-ROM）"><a href="#传统Option-ROM（Legacy-Option-ROM）" class="headerlink" title="传统Option ROM（Legacy Option ROM）"></a>传统Option ROM（Legacy Option ROM）</h2><p>传统Option ROM虽然不被包含在CSM模块之中，但从整个BIOS系统层面来看，它是一个非常重要的组件，它和CSM模块联合工作，共同完成了传统OS的加载引导。</p>
+<p>Option ROM一般由设备厂家提供，有两种方式：一种是集成打包到EFI firmware里面，另一种是放在对应设备的ROM里。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>《****Intel****® <em><strong>*Platform Innovation Framework for UEFI*</strong></em></p>
+<p>****Compatibility Support Module Specification****》</p>
+<p>《Beyond BIOS》</p>
+
+        
+      </div>
+
+         
+    </div>
+    
+     
+  </div>
+  
+    
+<nav id="article-nav">
+  <a class="article-nav-btn left "
+    
+      href="/project/2023/08/09/Linux-grub2%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0/"
+      title="Linux grub2原理学习"
+     >
+    <i class="fa-solid fa-angle-left"></i>
+    <p class="title-text">
+      
+        Linux grub2原理学习
+        
+    </p>
+  </a>
+  <a class="article-nav-btn right "
+    
+      href="/project/2023/08/09/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8%E7%BB%95%E8%BF%87%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"
+      title="安全启动绕过漏洞分析"
+     >
+
+    <p class="title-text">
+      
+        安全启动绕过漏洞分析
+        
+    </p>
+    <i class="fa-solid fa-angle-right"></i>
+  </a>
+</nav>
+
+
+  
+</article>
+
+
+  
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <div id="comment-card" class="comment-card">
+    <div class="main-title-bar">
+      <div class="main-title-dot"></div>
+      <div class="main-title">留言 </div>
+    </div>
+    <div id="vcomments"></div>
+  </div>
+  <script>
+      new Valine({"enable":true,"appId":"bC8HOSKa4QB7G6TfuGWB97i4-gzGzoHsz","appKey":"aoDFuSX5vWN8Xn1ukZpJ50be","placeholder":"写下你的评论...","pageSize":10,"highlight":true,"serverURLs":null,"el":"#vcomments"});
+  </script>
+ 
+    </div>
+    <div id="footer-wrapper">
+      <footer id="footer">
+  
+  <div id="footer-info" class="inner">
+    
+    &copy; 2023 Edvison<br>
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> & Theme <a target="_blank" rel="noopener" href="https://github.com/saicaca/hexo-theme-vivia">Vivia</a>
+  </div>
+</footer>
+
+    </div>
+    <div class="back-to-top-wrapper">
+    <button id="back-to-top-btn" class="back-to-top-btn" onclick="topFunction()">
+        <span class="material-symbols-rounded">keyboard_arrow_up</span>
+    </button>
+</div>
+
+<script>
+    function topFunction() {
+        window.scroll({ top: 0, behavior: 'smooth' });
+    }
+    let btn = document.getElementById('back-to-top-btn');
+    function scrollFunction() {
+        if (document.body.scrollTop > 600 || document.documentElement.scrollTop > 600) {
+            btn.style.opacity = 1;
+        } else {
+            btn.style.opacity = 0;
+        }
+    }
+    window.onscroll = function() {
+        scrollFunction();
+    }
+</script>
+
+  </div>
+  <script src="/project/js/light-dark-switch.js"></script>
+</body>
+</html>

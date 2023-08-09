@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+
+
+<html theme="dark" showBanner="true" hasBanner="true" > 
+<link href="/project/fontawesome/css/fontawesome.css" rel="stylesheet">
+<link href="/project/fontawesome/css/brands.css" rel="stylesheet">
+<link href="/project/fontawesome/css/solid.css" rel="stylesheet">
+<script src="/project/js/color.global.min.js" ></script>
+<script src="/project/js/load-settings.js" ></script>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Linux grub2原理学习 | Edvison&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Grub2 原理学习及源码分析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux grub2原理学习">
+<meta property="og:url" content="https://edvison.github.io/project/2023/08/09/Linux-grub2%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="Edvison&#39;s blog">
+<meta property="og:description" content="Grub2 原理学习及源码分析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230328112437114.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230328112638013.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230328160320796.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230328173554336.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230331101046396.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230410110249027.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230410154010522.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230410155746266.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230412154907392.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230413152438809.png">
+<meta property="article:published_time" content="2023-08-09T07:55:24.000Z">
+<meta property="article:modified_time" content="2023-08-09T07:57:45.797Z">
+<meta property="article:author" content="edvison">
+<meta property="article:tag" content="Grub2">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230328112437114.png">
+  
+    <link rel="alternate" href="/project/atom.xml" title="Edvison's blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-192.png" sizes="192x192">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-192.png" sizes="192x192">
+  
+  
+<link rel="stylesheet" href="/project/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  
+  
+    
+<div id="banner" class="">
+  <img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230807175151.png" itemprop="image">
+  <div id="banner-dim"></div>
+</div>
+ 
+   
+  <div id="main-grid" class="shadow   ">
+    <div id="nav" class=""  >
+      <navbar id="navbar">
+  <nav id="title-nav">
+    <a href="/project/">
+      <div id="vivia-logo">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div>Edvison's blog </div>
+    </a>
+  </nav>
+  <nav id="main-nav">
+    
+      <a class="main-nav-link" href="/project/">Home</a>
+    
+      <a class="main-nav-link" href="/project/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/project/about">About</a>
+    
+  </nav>
+  <nav id="sub-nav">
+    <a id="theme-btn" class="nav-icon">
+      <span class="material-symbols-rounded light-mode-icon">wb_sunny</span>
+      <span class="material-symbols-rounded dark-mode-icon">dark_mode</span>
+    </a>
+    
+      <a id="nav-rss-link" class="nav-icon mobile-hide" href="/project/atom.xml" title="RSS 订阅">
+        <span class="material-symbols-rounded rss">rss_feed</span>
+      </a>
+    
+    <a id="nav-search-btn" class="nav-icon" title="搜索" style="display: none;">
+      <span class="material-symbols-rounded">search</span>
+    </a>
+    <div id="nav-menu-btn" class="nav-icon">
+      <span class="material-symbols-rounded">menu</span>
+    </div>
+  </nav>
+</navbar>
+<div id="nav-dropdown" class="hidden">
+  <div id="dropdown-link-list">
+    
+      <a class="nav-dropdown-link" href="/project/">Home</a>
+    
+      <a class="nav-dropdown-link" href="/project/archives">Archives</a>
+    
+      <a class="nav-dropdown-link" href="/project/about">About</a>
+    
+    
+      <a class="nav-dropdown-link" href="/project/atom.xml" title="RSS 订阅">RSS</a>
+     
+    </div>
+</div>
+<script>
+  let dropdownBtn = document.getElementById("nav-menu-btn");
+  let dropdownEle = document.getElementById("nav-dropdown");
+  dropdownBtn.onclick = function() {
+    dropdownEle.classList.toggle("hidden");
+  }
+</script>
+    </div>
+    <div id="sidebar-wrapper">
+      <sidebar id="sidebar">
+  
+    <div class="widget-wrap">
+  <div class="info-card">
+    <div class="avatar">
+      
+        <image src=https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230808155156.png></image>
+      
+      <div class="img-dim"></div>
+    </div>
+    <div class="info">
+      <div class="username">Edvison </div>
+      <div class="dot"></div>
+      <div class="subtitle">flung out of space </div>
+      <div class="link-list">
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://github.com/Edvison" title="github"><i class="fa-brands fa-github"></i></a>
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://weibo.com/u/6038772011" title="weibo"><i class="fa-brands fa-weibo"></i></a>
+         
+      </div>  
+    </div>
+  </div>
+</div>
+
+  
+  <div class="sticky">
+    
+      
+
+
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">分类</h3>
+      <div class="category-box">
+            <a class="category-link" href="/project/categories/UEFI%E5%8E%9F%E7%90%86/">
+                UEFI原理
+                <div class="category-count">3</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/UEFI%E5%9B%BA%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                UEFI固件安全
+                <div class="category-count">6</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/MBR%E5%8E%9F%E7%90%86/">
+                MBR原理
+                <div class="category-count">2</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%BF%BB%E8%AF%91/">
+                翻译
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/Grub2%E5%8E%9F%E7%90%86/">
+                Grub2原理
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/IoT%E5%AE%89%E5%85%A8/">
+                IoT安全
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%A1%AC%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                硬件安全
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/VBIOS%E4%BF%AE%E6%94%B9/">
+                VBIOS修改
+                <div class="category-count">1</div>
+            </a>
+        </div>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">标签</h3>
+      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/CSM/" rel="tag">CSM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/DMA%E6%94%BB%E5%87%BB/" rel="tag">DMA攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/Grub2/" rel="tag">Grub2</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/HID%E6%94%BB%E5%87%BB/" rel="tag">HID攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR/" rel="tag">MBR</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR%E5%90%8E%E9%97%A8/" rel="tag">MBR后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OS-Loader/" rel="tag">OS Loader</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OVMF%E7%BC%96%E8%AF%91/" rel="tag">OVMF编译</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/PCH/" rel="tag">PCH</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM/" rel="tag">SMM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E5%90%8E%E9%97%A8/" rel="tag">SMM后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">SMM漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/UEFI/" rel="tag">UEFI</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/VBIOS/" rel="tag">VBIOS</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/pcie/" rel="tag">pcie</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4/" rel="tag">写保护</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4%E7%AA%81%E7%A0%B4/" rel="tag">写保护突破</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%8E%9F%E7%90%86/" rel="tag">原理</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/" rel="tag">安全启动</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%BC%80%E5%8F%91%E6%9D%BF/" rel="tag">开发板</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/" rel="tag">树莓派</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" rel="tag">漏洞利用</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E6%89%AB%E6%8F%8F/" rel="tag">漏洞扫描</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" rel="tag">环境搭建</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%94%B5%E6%BA%90%E6%95%85%E9%9A%9C/" rel="tag">电源故障</a></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">归档</h3>
+      
+      
+        <a class="archive-link" href="/project/archives/2023/08 ">
+          八月 2023 
+          <div class="archive-count">22 </div>
+        </a>
+      
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">最新文章</h3>
+      <ul>
+        
+          <a class="recent-link" href="/project/2023/08/09/Lenovo%E5%9B%BA%E4%BB%B6%E4%B8%AD%E7%9A%84SMM-callout%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="Lenovo固件中的SMM callout漏洞利用" >
+            <div class="recent-link-text">
+              Lenovo固件中的SMM callout漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%88%A9%E7%94%A8DMA%E6%94%BB%E5%87%BB%E7%AA%81%E7%A0%B4UEFI%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6/" title="利用DMA攻击突破UEFI安全机制" >
+            <div class="recent-link-text">
+              利用DMA攻击突破UEFI安全机制
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/UEFI-%E5%BC%95%E5%AF%BC%E8%84%9A%E6%9C%AC%E8%A1%A8%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="UEFI 引导脚本表漏洞利用" >
+            <div class="recent-link-text">
+              UEFI 引导脚本表漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%9F%BA%E4%BA%8EUEFI%E5%B9%B3%E5%8F%B0%E7%9A%84SMM%E5%90%8E%E9%97%A8%E6%9E%84%E5%BB%BA/" title="基于UEFI平台的SMM后门构建" >
+            <div class="recent-link-text">
+              基于UEFI平台的SMM后门构建
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/P4wnP1%E9%85%8D%E7%BD%AE%E4%B8%8E%E4%BD%BF%E7%94%A8/" title="P4wnP1配置与使用" >
+            <div class="recent-link-text">
+              P4wnP1配置与使用
+            </div>
+          </a>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+  </div>
+</sidebar>
+    </div>
+    <div id="content-body">
+       
+
+<article id="post-Linux-grub2原理学习" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  
+    
+   
+  <div class="article-inner">
+    <div class="article-main">
+      <header class="article-header">
+        
+<div class="main-title-bar">
+  <div class="main-title-dot"></div>
+  
+    
+      <h1 class="p-name article-title" itemprop="headline name">
+        Linux grub2原理学习
+      </h1>
+    
+  
+</div>
+
+        <div class='meta-info-bar'>
+          <div class="meta-info">
+  <time class="dt-published" datetime="2023-08-09T07:55:24.000Z" itemprop="datePublished">2023-08-09</time>
+</div>
+          <div class="need-seperator meta-info">
+            <div class="meta-cate-flex">
+  
+  <a class="meta-cate-link" href="/project/categories/Grub2%E5%8E%9F%E7%90%86/">Grub2原理</a>
+   
+</div>
+  
+          </div>
+          <div class="wordcount need-seperator meta-info">
+            5.3k 词 
+          </div>
+        </div>
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/Grub2/" rel="tag">Grub2</a></li></ul>
+
+      </header>
+      <div class="e-content article-entry" itemprop="articleBody">
+        
+          <p>Grub2 原理学习及源码分析。</p>
+<span id="more"></span>
+
+<h1 id="原理相关"><a href="#原理相关" class="headerlink" title="原理相关"></a>原理相关</h1><h2 id="Boot-Loaders-和-Boot-Managers-的区别"><a href="#Boot-Loaders-和-Boot-Managers-的区别" class="headerlink" title="Boot Loaders 和 Boot Managers 的区别"></a>Boot Loaders 和 Boot Managers 的区别</h2><ul>
+<li>Boot managers：为一个提供启动选项的菜单，或以其他方式来提供控制启动过程的程序。用户可以选择一个选项，然后boot manager将控制权交给选择的工具。</li>
+<li>Boot loaders：负责将操作系统内核加载到内存中，并启动内核运行。一般还会有其他支持文件，如Linux的initial RAM disk文件（initrd）</li>
+</ul>
+<p>然而Grub（包括grub legacy和grub2），它既是boot manager又是boot loader。</p>
+<p>而有些程序只能加载linux内核的，就只是boot loader了（如ELILO、SYSLINUX、EFI stub loader）</p>
+<p>有些程序则只是boot manager（如rEFIt、rEFInd、gummiboot&#x2F;systemd-boot）。</p>
+<h2 id="linux-启动分区结构"><a href="#linux-启动分区结构" class="headerlink" title="linux 启动分区结构"></a>linux 启动分区结构</h2><p>用dd命令导出efi分区数据，可以直接解压看到里面的文件：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230328112437114.png" alt="image-20230328112437114"></p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230328112638013.png" alt="image-20230328112638013"></p>
+<p>从EFI启动原理上讲，EFI启动过程依赖于ESP上的EFI Boot loader和BIOS中设置的NVRAM变量中指向这些boot loader的指针。然而有些EFI的bug或者NVRAM变量损坏会导致无法正常引导（如拔掉硬盘等操作都会导致NVRAM变量消失），需要重新创建相应的变量才能恢复启动。</p>
+<p>在windows下面很简单，很多uefi bios都被设计成会默认寻找windows boot loader，但Linux发行版如果找不到对应的引导项就直接停止启动了。</p>
+<p>为了缓解这个问题，linux开发者创建了<code>fallback.efi</code>程序，现在很少用这个名字，通常是将shim或shim-signed，并常作为<code>fbx64.efi</code>文件出现在linux文件系统中。</p>
+<p>无论是哪种文件名，<code>fallback.efi</code>都是一种boot manager(而不是加载启动选项菜单)，它会遍历&#x2F;EFI子目录，找到BOOT.CSV&#x2F;BOOTX64.CSV文件，然后读取并处理它，来生成一个新的NVRAM变量。CSV文件为由逗号分隔的数据元素，如下例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shimx64.efi,ubuntu,,This is the boot entry for ubuntu</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><em><strong>filename</strong></em>(shimx64.efi) —— 要添加到NVRAM启动管理表中的文件名，和BOOT.CSV在同一个目录下。</li>
+<li><em><strong>label</strong></em>(ubuntu) —— 与文件相关联的标签，由固件内置的boot manager显示。</li>
+<li><em><strong>options</strong></em> —— 指定Boot loader需要的选项，大多数时候为空。</li>
+<li><em><strong>description</strong></em> —— 描述。</li>
+</ul>
+<p>下面是原始ubuntu的EFI系统分区结构：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">EFI/</span><br><span class="line">    BOOT/</span><br><span class="line">        BOOTX64.EFI    #通用EFI启动程序，用于启动UEFI兼容的操作系统</span><br><span class="line">        fbx64.efi    #UEFI固件的帧缓冲驱动程序，用于提供图形化的启动界面</span><br><span class="line">        mmx64.efi    #UEFI固件的内存映射IO驱动程序，用于提供对系统内存的访问</span><br><span class="line">    ubuntu/</span><br><span class="line">        BOOTX64.CSV    #NVRAM变量配置</span><br><span class="line">        grub.cfg    #grub配置文件</span><br><span class="line">        grubx64.efi    #grub引导主程序，用于启动Ubuntu操作系统</span><br><span class="line">        mmx64.efi</span><br><span class="line">        shimx64.efi    #用于安全启动的引导程序，用于验证GRUB引导程序的数字签名</span><br></pre></td></tr></table></figure>
+
+<h2 id="grub-2原理"><a href="#grub-2原理" class="headerlink" title="grub 2原理"></a>grub 2原理</h2><p>命令行输入下面命令可查看当前系统是否安装grub2：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grub-install -V</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230328160320796.png" alt="image-20230328160320796"></p>
+<p>ubuntu设置开机进入grub2方法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo gedit /etc/default/grub</span><br></pre></td></tr></table></figure>
+
+<p>修改文件内容，注释掉GRUB_TIMEOUT_STYLE&#x3D;hidden这行，改为menu，并加上TIMEOUT时间：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">GRUB_DEFAULT=0</span><br><span class="line">GRUB_TIMEOUT_STYLE=menu</span><br><span class="line">#GRUB_TIMEOUT_STYLE=hidden</span><br><span class="line">GRUB_TIMEOUT=10</span><br></pre></td></tr></table></figure>
+
+<p>然后更新配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
+
+<p>重启就能自动进入grub了：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230328173554336.png" alt="image-20230328173554336"></p>
+<h3 id="grub-2引导操作系统方式"><a href="#grub-2引导操作系统方式" class="headerlink" title="grub 2引导操作系统方式"></a>grub 2引导操作系统方式</h3><p>grub 2支持两种引导方式：</p>
+<ul>
+<li>直接引导（direct-load）：直接通过默认的grub2 boot loader来引导写在默认配置文件中的操作系统。</li>
+<li>链式引导（chain-load）：使用grub2 boot loader链式引导另一个boot loader，该Boot loader将引导对应的操作系统。</li>
+</ul>
+<h3 id="grub2-配置"><a href="#grub2-配置" class="headerlink" title="grub2 配置"></a>grub2 配置</h3><p>grub2的默认配置文件为<code>/boot/grub/grub.cfg</code></p>
+<p>在此之前，ESP分区中有<code>/efi/ubuntu/grub.cfg</code>文件，将配置文件重定向到<code>/boot/grub/grub.cfg</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">search.fs_uuid 36f455bf-5513-4008-9790-8ff934ed60ae root hd0,gpt2</span><br><span class="line">set prefix=($root)&#x27;/boot/grub&#x27;</span><br><span class="line">configfile $prefix/grub.cfg</span><br></pre></td></tr></table></figure>
+
+<p>而<code>/boot/grub/grub.cfg</code>通常是通过grub2-mkconfig程序来生成的，默认情况下它会自动探测操作系统内核，并生成对应的操作系统菜单项，使用命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grub2-mkconfig -o /boot/grub/grub.cfg</span><br></pre></td></tr></table></figure>
+
+<p>grub2-mkconfig是根据<code>/etc/default/grub</code>文件来创建配置文件的。如上面讲的，可以修改该文件来使开机进入grub菜单，具体一些宏定义这里就不细讲了。</p>
+<p>下面是<code>/boot/grub/grub.cfg</code>配置文件中用于定义grub引导菜单条目信息的命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置 linux_gfx_mode 变量为 keep，用于保持当前图形模式</span></span><br><span class="line">export linux_gfx_mode</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">定义 Ubuntu 操作系统的 GRUB 引导菜单条目</span></span><br><span class="line">menuentry &#x27;Ubuntu&#x27; --class ubuntu --class gnu-linux --class gnu --class os $menuentry_id_option &#x27;gnulinux-simple-36f455bf-5513-4008-9790-8ff934ed60ae&#x27; &#123;</span><br><span class="line">    # 如果上一次启动失败，则记录失败信息</span><br><span class="line">    recordfail</span><br><span class="line">    # 加载视频驱动</span><br><span class="line">    load_video</span><br><span class="line">    # 设置图形模式为 linux_gfx_mode 变量的值</span><br><span class="line">    gfxmode $linux_gfx_mode</span><br><span class="line">    # 加载 gzip 模块</span><br><span class="line">    insmod gzio</span><br><span class="line">    # 如果 grub_platform 变量的值为 xen，则加载 xzio 和 lzopio 模块</span><br><span class="line">    if [ x$grub_platform = xxen ]; then insmod xzio; insmod lzopio; fi</span><br><span class="line">    # 加载 GPT 分区模块和 ext2 文件系统模块，并设置根分区</span><br><span class="line">    insmod part_gpt</span><br><span class="line">    insmod ext2</span><br><span class="line">    set root=&#x27;hd0,gpt2&#x27;</span><br><span class="line">    # 根据 UUID 查找根分区</span><br><span class="line">    if [ x$feature_platform_search_hint = xy ]; then</span><br><span class="line">      search --no-floppy --fs-uuid --set=root --hint-bios=hd0,gpt2 --hint-efi=hd0,gpt2 --hint-baremetal=ahci0,gpt2  36f455bf-5513-4008-9790-8ff934ed60ae</span><br><span class="line">    else</span><br><span class="line">      search --no-floppy --fs-uuid --set=root 36f455bf-5513-4008-9790-8ff934ed60ae</span><br><span class="line">    fi</span><br><span class="line">    # 设置 Linux 内核启动参数，包括根分区 UUID、只读模式、安静模式和启动画面</span><br><span class="line">    linux    /boot/vmlinuz-5.15.0-69-generic root=UUID=36f455bf-5513-4008-9790-8ff934ed60ae ro  quiet splash $vt_handoff</span><br><span class="line">    # 加载 initrd 镜像</span><br><span class="line">    initrd    /boot/initrd.img-5.15.0-69-generic</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="img文件"><a href="#img文件" class="headerlink" title="img文件"></a>img文件</h3><p>grub由几个img镜像组成，各种用于不同方式启动的grub引导镜像（boot.img）、一个内核镜像(<code>kernel.img</code>)和一些与内核镜像结合起来形成核心镜像(<code>core.img</code>)的模块。下图为各个img文件之间的关系：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230331101046396.png" alt="image-20230331101046396"></p>
+<p>在传统BIOS+MBR启动模式下：</p>
+<ul>
+<li>boot.img为grub启动的第一个img文件，是被写入到MBR中长度为512字节的数据。它负责读取属于core.img的第一个扇区，并跳转到该位置，将控制权交给core.img的入口点。一般core.img的地址是硬编码到Boot.img中的（*感觉可以利用这个来劫持）。</li>
+<li>core.img中包含了多个img文件的内容，是根据diskboot.img、kernel.img和一系列模块来动态创建的。包含的功能模块在支撑grub能正常工作，如配置文件解析器、文件系统解析器、内存管理器、多重引导器等。</li>
+</ul>
+<p>当BIOS将控制权转移到MBR中的boot loader后，boot.img被加载到内存中，执行核心代码，跳转到core.img的入口点，core.img读取grub.cfg，生成菜单界面，等待用户选择加载项，选择后会加载对应操作系统内核和initrd镜像，并将控制权转移到内核，启动操作系统。</p>
+<h1 id="启动流程"><a href="#启动流程" class="headerlink" title="启动流程"></a>启动流程</h1><ol>
+<li><p>BIOS自检：计算机开机时，首先由BIOS（Basic Input&#x2F;Output System）进行自检，检查硬件是否正常。</p>
+</li>
+<li><p>引导加载程序（bootloader）：BIOS自检完成后，会从硬盘、光盘或USB设备等存储介质中读取引导加载程序。Ubuntu使用Grub2作为默认的引导加载程序，它会读取&#x2F;boot&#x2F;grub&#x2F;grub.cfg配置文件并显示菜单，用户可以选择要启动的操作系统或内核。</p>
+</li>
+<li><p>内核加载：引导加载程序会加载Ubuntu内核文件（vmlinuz），并将其解压缩到内存中。</p>
+</li>
+</ol>
+<p>由于Grub2即作为启动管理器又作为boot loader，grubx64.efi会根据配置信息来加载操作系统内核和模块。如下面的配置命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">linux    /boot/vmlinuz-5.15.0-69-generic root=UUID=36f455bf-5513-4008-9790-8ff934ed60ae ro  quiet splash $vt_handoff</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li><p>初始化进程（init）：内核加载完成后，会启动初始化进程（init）。init进程会读取&#x2F;etc&#x2F;inittab配置文件并启动其他系统进程。</p>
+</li>
+<li><p>运行级别（runlevel）：Ubuntu系统有7个运行级别，每个运行级别都对应着不同的系统状态。init进程会根据配置文件中指定的运行级别启动相应的服务和进程。</p>
+</li>
+<li><p>系统服务启动：在特定的运行级别下，init进程会启动相应的系统服务，如网络服务、文件系统服务等。</p>
+</li>
+<li><p>登录管理器（display manager）：在图形界面下，登录管理器会启动并显示登录界面，等待用户输入用户名和密码。</p>
+</li>
+</ol>
+<h3 id="initrd镜像"><a href="#initrd镜像" class="headerlink" title="initrd镜像"></a>initrd镜像</h3><p>initrd（Initial RAM Disk）是一个临时文件系统，它被用于在Linux系统启动时提供必要的文件和驱动程序。initrd镜像包含了操作系统启动所需的所有文件和驱动程序，包括根文件系统、设备驱动程序、网络协议栈、文件系统工具等等。当Linux系统启动时，initrd镜像会被加载到内存中，然后被挂载为根文件系统，从而提供了一个最小化的运行环境，使得系统能够启动并加载必要的驱动程序，最终完成系统初始化。</p>
+<p>cpio压缩格式的initrd.img文件处理流程：</p>
+<p>1．boot loader把内核以及initrd文件加载到内存的特定位置。</p>
+<p>2．内核判断initrd的文件格式，如果是cpio格式。</p>
+<p>3．将initrd的内容释放到rootfs中。</p>
+<p>4．执行initrd中的&#x2F;init文件，执行到这一点，内核的工作全部结束，完全交给&#x2F;init文件处理。</p>
+<p>dmesg查看启动日志，可以看到部分日志，但不全：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230410110249027.png" alt="image-20230410110249027"></p>
+<p>重启进入Grub，选中启动项，按e进入编辑模式，删除linux这行的quiet选项，按ctrl+x启动系统：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230410154010522.png" alt="image-20230410154010522"></p>
+<p>命令行输入下面命令查看grub日志：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo cat /var/log/boot.log</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230410155746266.png"></p>
+<h3 id="EFI分区文件调用流程"><a href="#EFI分区文件调用流程" class="headerlink" title="EFI分区文件调用流程"></a>EFI分区文件调用流程</h3><p>在没有安全启动的系统下，EFI分区文件调用流程是：</p>
+<ol>
+<li><p>读取BOOT.CSV&#x2F;BOOTX64.CSV文件，处理NVRAM启动项。</p>
+</li>
+<li><p>由于NVRAM设置shimx64.efi为入口点，系统会先加载ubuntu&#x2F;shimx64.efi，其中init_grub函数负责加载fbx64.efi、mmx64.efi模块，提供图形显示和内存管理的支持，然后再加载并启动grubx64.efi。</p>
+<blockquote>
+<p>加载这些模块的过程是通过调用UEFI固件提供的<code>LoadImage</code>和<code>StartImage</code>函数实现的。<code>LoadImage</code>函数用于加载模块文件，而<code>StartImage</code>函数用于启动模块文件中的代码。</p>
+</blockquote>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230412154907392.png" alt="image-20230412154907392"></p>
+</li>
+<li><p>grubx64.efi读取grub.cfg，处理引导配置信息，等用户选择指定的启动项后或使用默认启动项，加载操作系统内核和initrd，并将控制权转交给内核。</p>
+</li>
+</ol>
+<h1 id="grub2源码编译与分析"><a href="#grub2源码编译与分析" class="headerlink" title="grub2源码编译与分析"></a>grub2源码编译与分析</h1><p>依赖：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">* GCC 5.1.0 or later</span><br><span class="line">  Experimental support for clang 8.0.0 or later (results in much bigger binaries)</span><br><span class="line">  for i386, x86_64, arm (including thumb), arm64, mips(el), powerpc, sparc64</span><br><span class="line">* GNU Make</span><br><span class="line">* GNU Bison 2.3 or later</span><br><span class="line">* GNU gettext 0.17 or later</span><br><span class="line">* GNU binutils 2.9.1.0.23 or later</span><br><span class="line">* Flex 2.5.35 or later</span><br><span class="line">* pkg-config</span><br><span class="line">* GNU patch</span><br><span class="line">* Other standard GNU/Unix tools</span><br><span class="line">* a libc with large file support (e.g. glibc 2.1 or later)</span><br><span class="line"> </span><br><span class="line">On GNU/Linux, you also need:</span><br><span class="line"> </span><br><span class="line">* libdevmapper 1.02.34 or later (recommended)</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">* Python 3 (NOTE: python 2.6 should still work, but it&#x27;s not tested)</span><br><span class="line">* Autoconf 2.64 or later</span><br><span class="line">* Automake 1.14 or later</span><br><span class="line"> </span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+
+<p>安装好依赖后，运行<code>./bootstrap</code>脚本，生成配置。</p>
+<p>配置编译选项，设置为调试模式，其中–prefix选项指定安装目录，CFLAGS指定编译调试选项，目标平台为x86_64-efi平台：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./configure --target=x86_64 --with-platform=efi --prefix=/home/edvison/grub2 CFLAGS=&quot;-g&quot;</span><br></pre></td></tr></table></figure>
+
+<p>安装:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+
+<p>生成efi：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MODULES=&quot;search iso9660 configfile normal memdisk tar part_msdos part_gpt fat&quot;</span><br><span class="line">./grub-mkimage -p . -d ./grub-core/ -O x86_64-efi -o grubx64.efi $MODULES</span><br></pre></td></tr></table></figure>
+
+<p>-d选项指定使用.&#x2F;grub-core目录下的image和module，-O指定生成镜像的格式，-o为输出文件，后面可接复数包含在.&#x2F;grub-core目录下的模块名。</p>
+<h2 id="grub-mkimage分析"><a href="#grub-mkimage分析" class="headerlink" title="grub-mkimage分析"></a>grub-mkimage分析</h2><p>看到前面grubx64.efi是通过grub-mkimage来生成的，但其中包含哪些镜像和模块仍不太清楚，还是得从源码来进行分析。</p>
+<p>grub-mkimage入口函数定义在<code>util/grub-mkimage.c</code>中，该文件主要负责命令行参数初始化和解析，就不细看了：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230413152438809.png" alt="image-20230413152438809"></p>
+<p>重点关注image生成部分，源码在<code>util/mkimage.c</code>中。</p>
+<p>grub_install_image_target_desc结构体定义了各个格式的镜像成员的元素，下面是x86_64-efi的image_target定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">grub_install_image_target_desc</span> <span class="title">image_targets</span>[] =</span></span><br><span class="line">  &#123;</span><br><span class="line">  ...</span><br><span class="line">      &#123;</span><br><span class="line">      .dirname = <span class="string">&quot;x86_64-efi&quot;</span>,</span><br><span class="line">      .names = &#123; <span class="string">&quot;x86_64-efi&quot;</span>, <span class="literal">NULL</span> &#125;,</span><br><span class="line">      .voidp_sizeof = <span class="number">8</span>,</span><br><span class="line">      .bigendian = <span class="number">0</span>,</span><br><span class="line">      .id = IMAGE_EFI,</span><br><span class="line">      .flags = PLATFORM_FLAGS_NONE,</span><br><span class="line">      .total_module_size = TARGET_NO_FIELD,</span><br><span class="line">      .decompressor_compressed_size = TARGET_NO_FIELD,</span><br><span class="line">      .decompressor_uncompressed_size = TARGET_NO_FIELD,</span><br><span class="line">      .decompressor_uncompressed_addr = TARGET_NO_FIELD,</span><br><span class="line">      .section_align = GRUB_PE32_SECTION_ALIGNMENT,</span><br><span class="line">      .vaddr_offset = EFI64_HEADER_SIZE,</span><br><span class="line">      .pe_target = GRUB_PE32_MACHINE_X86_64,</span><br><span class="line">      .elf_target = EM_X86_64,</span><br><span class="line">    &#125;,</span><br><span class="line">    ...</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>grub_install_generate_image</code>负责生成指定的镜像：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">grub_install_generate_image</span> <span class="params">(<span class="type">const</span> <span class="type">char</span> *dir, <span class="type">const</span> <span class="type">char</span> *prefix,</span></span><br><span class="line"><span class="params">                 FILE *out, <span class="type">const</span> <span class="type">char</span> *outname, <span class="type">char</span> *mods[],</span></span><br><span class="line"><span class="params">                 <span class="type">char</span> *memdisk_path, <span class="type">char</span> **pubkey_paths,</span></span><br><span class="line"><span class="params">                 <span class="type">size_t</span> npubkeys, <span class="type">char</span> *config_path,</span></span><br><span class="line"><span class="params">                 <span class="type">const</span> <span class="keyword">struct</span> grub_install_image_target_desc *image_target,</span></span><br><span class="line"><span class="params">                 <span class="type">int</span> note, <span class="type">grub_compression_t</span> comp, <span class="type">const</span> <span class="type">char</span> *dtb_path,</span></span><br><span class="line"><span class="params">                 <span class="type">const</span> <span class="type">char</span> *sbat_path, <span class="type">int</span> disable_shim_lock)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> *kernel_img, *core_img;</span><br><span class="line">  <span class="type">size_t</span> total_module_size, core_size;</span><br><span class="line">  <span class="type">size_t</span> memdisk_size = <span class="number">0</span>, config_size = <span class="number">0</span>;</span><br><span class="line">  <span class="type">size_t</span> prefix_size = <span class="number">0</span>, dtb_size = <span class="number">0</span>, sbat_size = <span class="number">0</span>;</span><br><span class="line">  <span class="type">char</span> *kernel_path;</span><br><span class="line">  <span class="type">size_t</span> offset;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">grub_util_path_list</span> *<span class="title">path_list</span>, *<span class="title">p</span>;</span></span><br><span class="line">  <span class="type">size_t</span> decompress_size = <span class="number">0</span>;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">grub_mkimage_layout</span> <span class="title">layout</span>;</span></span><br><span class="line"> </span><br><span class="line">  <span class="keyword">if</span> (comp == GRUB_COMPRESSION_AUTO)</span><br><span class="line">    comp = image_target-&gt;default_compression;</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">if</span> (image_target-&gt;id == IMAGE_I386_PC</span><br><span class="line">      || image_target-&gt;id == IMAGE_I386_PC_PXE</span><br><span class="line">      || image_target-&gt;id == IMAGE_I386_PC_ELTORITO)</span><br><span class="line">    comp = GRUB_COMPRESSION_LZMA;</span><br><span class="line"> </span><br><span class="line">  path_list = grub_util_resolve_dependencies (dir, <span class="string">&quot;moddep.lst&quot;</span>, mods);</span><br><span class="line"> </span><br><span class="line">  kernel_path = grub_util_get_path (dir, <span class="string">&quot;kernel.img&quot;</span>);</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">if</span> (image_target-&gt;voidp_sizeof == <span class="number">8</span>)</span><br><span class="line">    total_module_size = <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_module_info64);</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">    total_module_size = <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_module_info32);</span><br><span class="line"> </span><br><span class="line">  &#123;</span><br><span class="line">    <span class="type">size_t</span> i;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; npubkeys; i++)</span><br><span class="line">      &#123;</span><br><span class="line">    <span class="type">size_t</span> curs;</span><br><span class="line">    curs = ALIGN_ADDR (grub_util_get_image_size (pubkey_paths[i]));</span><br><span class="line">    grub_util_info (<span class="string">&quot;the size of public key %u is 0x%&quot;</span></span><br><span class="line">            GRUB_HOST_PRIxLONG_LONG,</span><br><span class="line">            (<span class="type">unsigned</span>) i, (<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>) curs);</span><br><span class="line">    total_module_size += curs + <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_module_header);</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>comp参数指定压缩方式，默认为GRUB_COMPRESSION_AUTO，即LZMA压缩。</p>
+<p>path_list保存命令行参数传入的模块，同时保存moddep.lst文件中每个模块依赖的所有模块。</p>
+<p>kernel_path保存kernel.img的路径。</p>
+<p><code>grub_util_get_image_size</code>计算每个模块的大小，并统计到total_module_size中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//检测voidp_sizeof的值，判断64位or32位，选择对应的函数加载内核镜像。</span></span><br><span class="line"><span class="keyword">if</span> (image_target-&gt;voidp_sizeof == <span class="number">4</span>)</span><br><span class="line">     kernel_img = grub_mkimage_load_image32 (kernel_path, total_module_size,</span><br><span class="line">                         &amp;layout, image_target);</span><br><span class="line">   <span class="keyword">else</span></span><br><span class="line">     kernel_img = grub_mkimage_load_image64 (kernel_path, total_module_size,</span><br><span class="line">                         &amp;layout, image_target);</span><br><span class="line"><span class="comment">// Xen or Xen PVH平台，且内存对齐小于4096，设置对齐为4096</span></span><br><span class="line">   <span class="keyword">if</span> ((image_target-&gt;id == IMAGE_XEN || image_target-&gt;id == IMAGE_XEN_PVH) &amp;&amp;</span><br><span class="line">       layout.align &lt; <span class="number">4096</span>)</span><br><span class="line">     layout.align = <span class="number">4096</span>;</span><br><span class="line"><span class="comment">// 目标平台支持解压缩器，总模块大小不为TARGET_NO_FIELD，在内核镜像尾部添加模块大小</span></span><br><span class="line">   <span class="keyword">if</span> ((image_target-&gt;flags &amp; PLATFORM_FLAGS_DECOMPRESSORS)</span><br><span class="line">       &amp;&amp; (image_target-&gt;total_module_size != TARGET_NO_FIELD))</span><br><span class="line">     *((<span class="type">grub_uint32_t</span> *) (kernel_img + image_target-&gt;total_module_size))</span><br><span class="line">       = grub_host_to_target32 (total_module_size);</span><br><span class="line"><span class="comment">// 如平台要求模块在内核之前加载，则将镜像中的模块数据移到内核后，并清空之前模块的内存</span></span><br><span class="line">   <span class="keyword">if</span> (image_target-&gt;flags &amp; PLATFORM_FLAGS_MODULES_BEFORE_KERNEL)</span><br><span class="line">     &#123;</span><br><span class="line">       memmove (kernel_img + total_module_size, kernel_img, layout.kernel_size);</span><br><span class="line">       <span class="built_in">memset</span> (kernel_img, <span class="number">0</span>, total_module_size);</span><br><span class="line">     &#125;</span><br></pre></td></tr></table></figure>
+
+<p>后面几段基本都是处理模块和内核镜像的代码。之后压缩内核镜像和模块，将其存储到core_img中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">grub_util_info (<span class="string">&quot;kernel_img=%p, kernel_size=0x%&quot;</span> GRUB_HOST_PRIxLONG_LONG,</span><br><span class="line">          kernel_img,</span><br><span class="line">          (<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>) layout.kernel_size);</span><br><span class="line">  compress_kernel (image_target, kernel_img, layout.kernel_size + total_module_size,</span><br><span class="line">           &amp;core_img, &amp;core_size, comp);</span><br><span class="line">  <span class="built_in">free</span> (kernel_img);</span><br><span class="line"> </span><br><span class="line">  grub_util_info (<span class="string">&quot;the core size is 0x%&quot;</span> GRUB_HOST_PRIxLONG_LONG,</span><br><span class="line">          (<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>) core_size);</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">if</span> (!(image_target-&gt;flags &amp; PLATFORM_FLAGS_DECOMPRESSORS)</span><br><span class="line">      &amp;&amp; image_target-&gt;total_module_size != TARGET_NO_FIELD)</span><br><span class="line">    *((<span class="type">grub_uint32_t</span> *) (core_img + image_target-&gt;total_module_size))</span><br><span class="line">      = grub_host_to_target32 (total_module_size);</span><br></pre></td></tr></table></figure>
+
+<p>之后就是检查image_target-&gt;id，根据不同平台来处理镜像的代码了，平台很多，直接看IMAGE_EFI格式：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br></pre></td><td class="code"><pre><span class="line">    <span class="keyword">case</span> IMAGE_EFI:</span><br><span class="line">      &#123;</span><br><span class="line">    <span class="type">char</span> *pe_img, *pe_sbat, *header;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">grub_pe32_section_table</span> *<span class="title">section</span>;</span></span><br><span class="line">    <span class="type">size_t</span> n_sections = <span class="number">4</span>;</span><br><span class="line">    <span class="type">size_t</span> scn_size;</span><br><span class="line">    <span class="type">grub_uint32_t</span> vma, raw_data;</span><br><span class="line">    <span class="type">size_t</span> pe_size, header_size;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">grub_pe32_coff_header</span> *<span class="title">c</span>;</span></span><br><span class="line">    <span class="type">static</span> <span class="type">const</span> <span class="type">grub_uint8_t</span> stub[] = GRUB_PE32_MSDOS_STUB;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">grub_pe32_optional_header</span> *<span class="title">o32</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">grub_pe64_optional_header</span> *<span class="title">o64</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">if</span> (image_target-&gt;voidp_sizeof == <span class="number">4</span>)</span><br><span class="line">      header_size = EFI32_HEADER_SIZE;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      header_size = EFI64_HEADER_SIZE;</span><br><span class="line"> </span><br><span class="line">    vma = raw_data = header_size;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">if</span> (sbat_path != <span class="literal">NULL</span>)</span><br><span class="line">      &#123;</span><br><span class="line">        sbat_size = ALIGN_ADDR (grub_util_get_image_size (sbat_path));</span><br><span class="line">        sbat_size = ALIGN_UP (sbat_size, GRUB_PE32_FILE_ALIGNMENT);</span><br><span class="line">      &#125;</span><br><span class="line"> </span><br><span class="line">    pe_size = ALIGN_UP (header_size + core_size, GRUB_PE32_FILE_ALIGNMENT) +</span><br><span class="line">          ALIGN_UP (layout.reloc_size, GRUB_PE32_FILE_ALIGNMENT) + sbat_size;</span><br><span class="line">    header = pe_img = xcalloc (<span class="number">1</span>, pe_size);</span><br><span class="line"> </span><br><span class="line">    <span class="built_in">memcpy</span> (pe_img + raw_data, core_img, core_size);</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/* The magic.  */</span></span><br><span class="line">    <span class="built_in">memcpy</span> (header, stub, GRUB_PE32_MSDOS_STUB_SIZE);</span><br><span class="line">    <span class="built_in">memcpy</span> (header + GRUB_PE32_MSDOS_STUB_SIZE, <span class="string">&quot;PE\0\0&quot;</span>,</span><br><span class="line">        GRUB_PE32_SIGNATURE_SIZE);</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/* The COFF file header.  */</span></span><br><span class="line">    c = (<span class="keyword">struct</span> grub_pe32_coff_header *) (header + GRUB_PE32_MSDOS_STUB_SIZE</span><br><span class="line">                          + GRUB_PE32_SIGNATURE_SIZE);</span><br><span class="line">    c-&gt;machine = grub_host_to_target16 (image_target-&gt;pe_target);</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">if</span> (sbat_path != <span class="literal">NULL</span>)</span><br><span class="line">      n_sections++;</span><br><span class="line"> </span><br><span class="line">    c-&gt;num_sections = grub_host_to_target16 (n_sections);</span><br><span class="line">    c-&gt;time = grub_host_to_target32 (STABLE_EMBEDDING_TIMESTAMP);</span><br><span class="line">    c-&gt;characteristics = grub_host_to_target16 (GRUB_PE32_EXECUTABLE_IMAGE</span><br><span class="line">                            | GRUB_PE32_LINE_NUMS_STRIPPED</span><br><span class="line">                            | ((image_target-&gt;voidp_sizeof == <span class="number">4</span>)</span><br><span class="line">                               ? GRUB_PE32_32BIT_MACHINE</span><br><span class="line">                               : <span class="number">0</span>)</span><br><span class="line">                            | GRUB_PE32_LOCAL_SYMS_STRIPPED</span><br><span class="line">                            | GRUB_PE32_DEBUG_STRIPPED);</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/* The PE Optional header.  */</span></span><br><span class="line">    <span class="keyword">if</span> (image_target-&gt;voidp_sizeof == <span class="number">4</span>)</span><br><span class="line">      &#123;</span><br><span class="line">        c-&gt;optional_header_size = grub_host_to_target16 (<span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_pe32_optional_header));</span><br><span class="line"> </span><br><span class="line">        o32 = (<span class="keyword">struct</span> grub_pe32_optional_header *)</span><br><span class="line">              (header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE +</span><br><span class="line">               <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_pe32_coff_header));</span><br><span class="line">        o32-&gt;magic = grub_host_to_target16 (GRUB_PE32_PE32_MAGIC);</span><br><span class="line">        o32-&gt;data_base = grub_host_to_target32 (header_size + layout.exec_size);</span><br><span class="line"> </span><br><span class="line">        section = (<span class="keyword">struct</span> grub_pe32_section_table *)(o32 + <span class="number">1</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">      &#123;</span><br><span class="line">        c-&gt;optional_header_size = grub_host_to_target16 (<span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_pe64_optional_header));</span><br><span class="line">        o64 = (<span class="keyword">struct</span> grub_pe64_optional_header *)</span><br><span class="line">          (header + GRUB_PE32_MSDOS_STUB_SIZE + GRUB_PE32_SIGNATURE_SIZE +</span><br><span class="line">                   <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_pe32_coff_header));</span><br><span class="line">        o64-&gt;magic = grub_host_to_target16 (GRUB_PE32_PE64_MAGIC);</span><br><span class="line"> </span><br><span class="line">        section = (<span class="keyword">struct</span> grub_pe32_section_table *)(o64 + <span class="number">1</span>);</span><br><span class="line">      &#125;</span><br><span class="line"> </span><br><span class="line"><span class="meta">#<span class="keyword">if</span> __GNUC__ &gt;= 12</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> GCC diagnostic push</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> GCC diagnostic ignored <span class="string">&quot;-Wdangling-pointer&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    PE_OHDR (o32, o64, header_size) = grub_host_to_target32 (header_size);</span><br><span class="line">    PE_OHDR (o32, o64, entry_addr) = grub_host_to_target32 (layout.start_address);</span><br><span class="line">    PE_OHDR (o32, o64, image_base) = <span class="number">0</span>;</span><br><span class="line">    PE_OHDR (o32, o64, image_size) = grub_host_to_target32 (pe_size);</span><br><span class="line">    PE_OHDR (o32, o64, section_alignment) = grub_host_to_target32 (image_target-&gt;section_align);</span><br><span class="line">    PE_OHDR (o32, o64, file_alignment) = grub_host_to_target32 (GRUB_PE32_FILE_ALIGNMENT);</span><br><span class="line">    PE_OHDR (o32, o64, subsystem) = grub_host_to_target16 (GRUB_PE32_SUBSYSTEM_EFI_APPLICATION);</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/* Do these really matter? */</span></span><br><span class="line">    PE_OHDR (o32, o64, stack_reserve_size) = grub_host_to_target32 (<span class="number">0x10000</span>);</span><br><span class="line">    PE_OHDR (o32, o64, stack_commit_size) = grub_host_to_target32 (<span class="number">0x10000</span>);</span><br><span class="line">    PE_OHDR (o32, o64, heap_reserve_size) = grub_host_to_target32 (<span class="number">0x10000</span>);</span><br><span class="line">    PE_OHDR (o32, o64, heap_commit_size) = grub_host_to_target32 (<span class="number">0x10000</span>);</span><br><span class="line"> </span><br><span class="line">    PE_OHDR (o32, o64, num_data_directories) = grub_host_to_target32 (GRUB_PE32_NUM_DATA_DIRECTORIES);</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/* The sections.  */</span></span><br><span class="line">    PE_OHDR (o32, o64, code_base) = grub_host_to_target32 (vma);</span><br><span class="line">    PE_OHDR (o32, o64, code_size) = grub_host_to_target32 (layout.exec_size);</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> __GNUC__ &gt;= 12</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> GCC diagnostic pop</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    section = init_pe_section (image_target, section, <span class="string">&quot;.text&quot;</span>,</span><br><span class="line">                   &amp;vma, layout.exec_size,</span><br><span class="line">                   image_target-&gt;section_align,</span><br><span class="line">                   &amp;raw_data, layout.exec_size,</span><br><span class="line">                   GRUB_PE32_SCN_CNT_CODE |</span><br><span class="line">                   GRUB_PE32_SCN_MEM_EXECUTE |</span><br><span class="line">                   GRUB_PE32_SCN_MEM_READ);</span><br><span class="line"> </span><br><span class="line">    scn_size = ALIGN_UP (layout.kernel_size - layout.exec_size, GRUB_PE32_FILE_ALIGNMENT);</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> __GNUC__ &gt;= 12</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> GCC diagnostic push</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> GCC diagnostic ignored <span class="string">&quot;-Wdangling-pointer&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="comment">/* ALIGN_UP (sbat_size, GRUB_PE32_FILE_ALIGNMENT) is done earlier. */</span></span><br><span class="line">    PE_OHDR (o32, o64, data_size) = grub_host_to_target32 (scn_size + sbat_size +</span><br><span class="line">                                   ALIGN_UP (total_module_size,</span><br><span class="line">                                     GRUB_PE32_FILE_ALIGNMENT));</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> __GNUC__ &gt;= 12</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> GCC diagnostic pop</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"> </span><br><span class="line">    section = init_pe_section (image_target, section, <span class="string">&quot;.data&quot;</span>,</span><br><span class="line">                   &amp;vma, scn_size, image_target-&gt;section_align,</span><br><span class="line">                   &amp;raw_data, scn_size,</span><br><span class="line">                   GRUB_PE32_SCN_CNT_INITIALIZED_DATA |</span><br><span class="line">                   GRUB_PE32_SCN_MEM_READ |</span><br><span class="line">                   GRUB_PE32_SCN_MEM_WRITE);</span><br><span class="line"> </span><br><span class="line">    scn_size = pe_size - layout.reloc_size - sbat_size - raw_data;</span><br><span class="line">    section = init_pe_section (image_target, section, <span class="string">&quot;mods&quot;</span>,</span><br><span class="line">                   &amp;vma, scn_size, image_target-&gt;section_align,</span><br><span class="line">                   &amp;raw_data, scn_size,</span><br><span class="line">                   GRUB_PE32_SCN_CNT_INITIALIZED_DATA |</span><br><span class="line">                   GRUB_PE32_SCN_MEM_READ |</span><br><span class="line">                   GRUB_PE32_SCN_MEM_WRITE);</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">if</span> (sbat_path != <span class="literal">NULL</span>)</span><br><span class="line">      &#123;</span><br><span class="line">        pe_sbat = pe_img + raw_data;</span><br><span class="line">        grub_util_load_image (sbat_path, pe_sbat);</span><br><span class="line"> </span><br><span class="line">        section = init_pe_section (image_target, section, <span class="string">&quot;.sbat&quot;</span>,</span><br><span class="line">                       &amp;vma, sbat_size,</span><br><span class="line">                       image_target-&gt;section_align,</span><br><span class="line">                       &amp;raw_data, sbat_size,</span><br><span class="line">                       GRUB_PE32_SCN_CNT_INITIALIZED_DATA |</span><br><span class="line">                       GRUB_PE32_SCN_MEM_READ);</span><br><span class="line">      &#125;</span><br><span class="line"> </span><br><span class="line">    scn_size = layout.reloc_size;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> __GNUC__ &gt;= 12</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> GCC diagnostic push</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> GCC diagnostic ignored <span class="string">&quot;-Wdangling-pointer&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    PE_OHDR (o32, o64, base_relocation_table.rva) = grub_host_to_target32 (vma);</span><br><span class="line">    PE_OHDR (o32, o64, base_relocation_table.size) = grub_host_to_target32 (scn_size);</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> __GNUC__ &gt;= 12</span></span><br><span class="line"><span class="meta">#<span class="keyword">pragma</span> GCC diagnostic pop</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="built_in">memcpy</span> (pe_img + raw_data, layout.reloc_section, scn_size);</span><br><span class="line">    init_pe_section (image_target, section, <span class="string">&quot;.reloc&quot;</span>,</span><br><span class="line">             &amp;vma, scn_size, image_target-&gt;section_align,</span><br><span class="line">             &amp;raw_data, scn_size,</span><br><span class="line">             GRUB_PE32_SCN_CNT_INITIALIZED_DATA |</span><br><span class="line">             GRUB_PE32_SCN_MEM_DISCARDABLE |</span><br><span class="line">             GRUB_PE32_SCN_MEM_READ);</span><br><span class="line"> </span><br><span class="line">    <span class="built_in">free</span> (core_img);</span><br><span class="line">    core_img = pe_img;</span><br><span class="line">    core_size = pe_size;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+
+<p>grubx64.efi是PE32+格式的，镜像需要对应处理为该格式，给镜像添加PE头，处理节区数据。</p>
+<p>这里将core_img的数据复制到pe_img，进行处理，处理完毕后再拷回core_img。</p>
+<p>由此可以看出，EFI模式下，依然是使用Kernel.img+modules的镜像数据，只是将其处理为PE32+的EFI文件了。</p>
+<h2 id="kernel-img分析"><a href="#kernel-img分析" class="headerlink" title="kernel.img分析"></a>kernel.img分析</h2><p>既然核心代码都在kernel.img中，那就得仔细分析它了。</p>
+<p>其源代码位于&#x2F;grub-core&#x2F;中，先看入口点：&#x2F;grub-core&#x2F;kern&#x2F;main.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* The main routine.  */</span></span><br><span class="line"><span class="type">void</span> __attribute__ ((<span class="keyword">noreturn</span>))</span><br><span class="line">grub_main (<span class="type">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">/* 初始化平台  */</span></span><br><span class="line">  grub_machine_init ();</span><br><span class="line"> </span><br><span class="line">  grub_boot_time (<span class="string">&quot;After machine init.&quot;</span>);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">/* This breaks flicker-free boot on EFI systems, so disable it there. */</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> GRUB_MACHINE_EFI</span></span><br><span class="line">  <span class="comment">/* Hello.  */</span></span><br><span class="line">  grub_setcolorstate (GRUB_TERM_COLOR_HIGHLIGHT);</span><br><span class="line">  grub_printf (<span class="string">&quot;Welcome to GRUB!\n\n&quot;</span>);</span><br><span class="line">  grub_setcolorstate (GRUB_TERM_COLOR_STANDARD);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"> </span><br><span class="line">  <span class="comment">/* 初始化认证 API.</span></span><br><span class="line"><span class="comment">      加载配置文件 */</span></span><br><span class="line">  grub_verifiers_init ();</span><br><span class="line"> </span><br><span class="line">  grub_load_config ();</span><br><span class="line"> </span><br><span class="line">  grub_boot_time (<span class="string">&quot;Before loading embedded modules.&quot;</span>);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">/* 加载预启动模块并释放空间  */</span></span><br><span class="line">  grub_register_exported_symbols ();</span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> GRUB_LINKER_HAVE_INIT</span></span><br><span class="line">  grub_arch_dl_init_linker ();</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">  grub_load_modules ();</span><br><span class="line"> </span><br><span class="line">  grub_boot_time (<span class="string">&quot;After loading embedded modules.&quot;</span>);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">/* 设置根设备和前缀，并导出相关环境变量</span></span><br><span class="line"><span class="comment">     for convenience.  */</span></span><br><span class="line">  grub_set_prefix_and_root ();</span><br><span class="line">  grub_env_export (<span class="string">&quot;root&quot;</span>);</span><br><span class="line">  grub_env_export (<span class="string">&quot;prefix&quot;</span>);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">/* 回收用于模块的空间  */</span></span><br><span class="line">  reclaim_module_space ();</span><br><span class="line"> </span><br><span class="line">  grub_boot_time (<span class="string">&quot;After reclaiming module space.&quot;</span>);</span><br><span class="line"><span class="comment">/* 注册核心命令，执行嵌入式配置文件 */</span></span><br><span class="line">  grub_register_core_commands ();</span><br><span class="line"> </span><br><span class="line">  grub_boot_time (<span class="string">&quot;Before execution of embedded config.&quot;</span>);</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">if</span> (load_config)</span><br><span class="line">    grub_parser_execute (load_config);</span><br><span class="line"> </span><br><span class="line"><span class="comment">/* 进入正常启动模式，加载正常模块 */</span></span><br><span class="line">  grub_boot_time (<span class="string">&quot;After execution of embedded config. Attempt to go to normal mode&quot;</span>);</span><br><span class="line"> </span><br><span class="line">  grub_load_normal_mode ();</span><br><span class="line"><span class="comment">/* 进入救援模式 */</span></span><br><span class="line">  grub_rescue_run ();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面看几个主要函数。</p>
+<h3 id="grub-machine-init"><a href="#grub-machine-init" class="headerlink" title="grub_machine_init"></a>grub_machine_init</h3><p>这个函数和体系架构相关，不同平台上的实现不同。其主要负责初始化平台上的必须操作。</p>
+<p>下面是i386 pc平台的初始化代码&#x2F;kern&#x2F;i386&#x2F;pc&#x2F;init.c：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Via needs additional wbinvd.  */</span></span><br><span class="line"><span class="comment">// 为解决VIA芯片组在使用BIOS进行内存映射时的bug</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">grub_via_workaround_init</span> <span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">grub_uint32_t</span> manufacturer[<span class="number">3</span>], max_cpuid;</span><br><span class="line">  <span class="comment">// 判断是否支持CPUID指令</span></span><br><span class="line">  <span class="keyword">if</span> (! grub_cpu_is_cpuid_supported ())</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line"><span class="comment">// 判断CPU是否为VIA芯片组</span></span><br><span class="line">  grub_cpuid (<span class="number">0</span>, max_cpuid, manufacturer[<span class="number">0</span>], manufacturer[<span class="number">2</span>], manufacturer[<span class="number">1</span>]);</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">if</span> (grub_memcmp (manufacturer, <span class="string">&quot;CentaurHauls&quot;</span>, <span class="number">12</span>) != <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line"><span class="comment">// 执行wbinvd指令，清空CPU缓存</span></span><br><span class="line">  grub_bios_via_workaround1 = <span class="number">0x090f</span>;</span><br><span class="line">  grub_bios_via_workaround2 = <span class="number">0x090f</span>;</span><br><span class="line">  <span class="keyword">asm</span> <span class="title function_">volatile</span> <span class="params">(<span class="string">&quot;wbinvd&quot;</span>)</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="type">void</span></span><br><span class="line"><span class="title function_">grub_machine_init</span> <span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> i;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> 0</span></span><br><span class="line">  <span class="type">int</span> grub_lower_mem;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">  <span class="type">grub_addr_t</span> modend;</span><br><span class="line"> </span><br><span class="line">  <span class="comment">/* This has to happen before any BIOS calls. */</span></span><br><span class="line">  <span class="comment">/* 在BIOS调用之前执行 */</span></span><br><span class="line">  grub_via_workaround_init ();</span><br><span class="line"> </span><br><span class="line">  grub_modbase = GRUB_MEMORY_MACHINE_DECOMPRESSION_ADDR + (_edata - _start);</span><br><span class="line"> </span><br><span class="line">  <span class="comment">/* Initialize the console as early as possible.  */</span></span><br><span class="line"><span class="comment">/* 初始化控制台 */</span></span><br><span class="line">  grub_console_init ();</span><br><span class="line"> </span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<h3 id="grub-load-config"><a href="#grub-load-config" class="headerlink" title="grub_load_config"></a>grub_load_config</h3><p>用于将GRUB配置文件加载到内存：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">grub_load_config</span> <span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">grub_module_header</span> *<span class="title">header</span>;</span></span><br><span class="line">   <span class="comment">// 通过 FOR_MODULES 宏遍历所有的模块，找到类型为 OBJ_TYPE_CONFIG 的模块</span></span><br><span class="line">  FOR_MODULES (header)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">/* Not an embedded config, skip.  */</span></span><br><span class="line">    <span class="keyword">if</span> (header-&gt;type != OBJ_TYPE_CONFIG)</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    <span class="comment">// 分配内存用于存储配置文件内容</span></span><br><span class="line">    load_config = grub_malloc (header-&gt;size - <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_module_header) + <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span> (!load_config)</span><br><span class="line">      &#123;</span><br><span class="line">    grub_print_error ();</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">     <span class="comment">// 将配置文件内容copy到内存中，并在末尾添加空字符</span></span><br><span class="line">    grub_memcpy (load_config, (<span class="type">char</span> *) header +</span><br><span class="line">         <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_module_header),</span><br><span class="line">         header-&gt;size - <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_module_header));</span><br><span class="line">    load_config[header-&gt;size - <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_module_header)] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="grub-load-modules"><a href="#grub-load-modules" class="headerlink" title="grub_load_modules"></a>grub_load_modules</h3><p>通过<code>grub_dl_load_core()</code>函数将类型为 OBJ_TYPE_ELF 的模块加载到内存中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Load all modules in core.  */</span></span><br><span class="line"><span class="type">static</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">grub_load_modules</span> <span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">grub_module_header</span> *<span class="title">header</span>;</span></span><br><span class="line">    <span class="comment">// 通过 FOR_MODULES 宏遍历所有的模块，找到类型为 OBJ_TYPE_ELF 的模块</span></span><br><span class="line">  FOR_MODULES (header)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">/* Not an ELF module, skip.  */</span></span><br><span class="line">    <span class="keyword">if</span> (header-&gt;type != OBJ_TYPE_ELF)</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">if</span> (! grub_dl_load_core ((<span class="type">char</span> *) header + <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_module_header),</span><br><span class="line">                 (header-&gt;size - <span class="keyword">sizeof</span> (<span class="keyword">struct</span> grub_module_header))))</span><br><span class="line">      grub_fatal (<span class="string">&quot;%s&quot;</span>, grub_errmsg);</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">if</span> (grub_errno)</span><br><span class="line">      grub_print_error ();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="grub-dl-load-core-grub-dl-init"><a href="#grub-dl-load-core-grub-dl-init" class="headerlink" title="grub_dl_load_core&amp;grub_dl_init"></a>grub_dl_load_core&amp;grub_dl_init</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">grub_dl_t</span></span><br><span class="line"><span class="title function_">grub_dl_load_core</span> <span class="params">(<span class="type">void</span> *addr, <span class="type">grub_size_t</span> size)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">grub_dl_t</span> mod;</span><br><span class="line"> </span><br><span class="line">  grub_boot_time (<span class="string">&quot;Parsing module&quot;</span>);</span><br><span class="line"> </span><br><span class="line">  mod = grub_dl_load_core_noinit (addr, size);</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">if</span> (!mod)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line"> </span><br><span class="line">  grub_boot_time (<span class="string">&quot;Initing module %s&quot;</span>, mod-&gt;name);</span><br><span class="line">  grub_dl_init (mod);</span><br><span class="line">  grub_boot_time (<span class="string">&quot;Module %s inited&quot;</span>, mod-&gt;name);</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">return</span> mod;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="keyword">inline</span> <span class="type">void</span></span><br><span class="line"><span class="title function_">grub_dl_init</span> <span class="params">(<span class="type">grub_dl_t</span> mod)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (mod-&gt;init)</span><br><span class="line">    (mod-&gt;init) (mod);</span><br><span class="line"> </span><br><span class="line">  mod-&gt;next = grub_dl_head;</span><br><span class="line">  grub_dl_head = mod;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="GRUB-MOD-INIT-linux"><a href="#GRUB-MOD-INIT-linux" class="headerlink" title="GRUB_MOD_INIT(linux)"></a>GRUB_MOD_INIT(linux)</h3><p>&#x2F;grub-core&#x2F;loader&#x2F;i386&#x2F;linux.c</p>
+<p>用于注册linux、initrd两个grub命令，回调函数分别为<code>grub_cmd_linux</code>、<code>grub_cmd_initrd</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">GRUB_MOD_INIT(linux)</span><br><span class="line">&#123;</span><br><span class="line">  cmd_linux = grub_register_command (<span class="string">&quot;linux&quot;</span>, grub_cmd_linux,</span><br><span class="line">                     <span class="number">0</span>, N_(<span class="string">&quot;Load Linux.&quot;</span>));</span><br><span class="line">  cmd_initrd = grub_register_command (<span class="string">&quot;initrd&quot;</span>, grub_cmd_initrd,</span><br><span class="line">                      <span class="number">0</span>, N_(<span class="string">&quot;Load initrd.&quot;</span>));</span><br><span class="line">  my_mod = mod;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="grub-cmd-linux"><a href="#grub-cmd-linux" class="headerlink" title="grub_cmd_linux"></a>grub_cmd_linux</h3><p>读取linux内核镜像：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">file = grub_file_open (argv[<span class="number">0</span>], GRUB_FILE_TYPE_LINUX_KERNEL);</span><br><span class="line"><span class="keyword">if</span> (! file)</span><br><span class="line">  <span class="keyword">goto</span> fail;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> (grub_file_read (file, &amp;lh, <span class="keyword">sizeof</span> (lh)) != <span class="keyword">sizeof</span> (lh))</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (!grub_errno)</span><br><span class="line">  grub_error (GRUB_ERR_BAD_OS, N_(<span class="string">&quot;premature end of file %s&quot;</span>),</span><br><span class="line">          argv[<span class="number">0</span>]);</span><br><span class="line">    <span class="keyword">goto</span> fail;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>创建内核命令行，调用grub_loader_set()，设置boot命令：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">linux_cmdline = grub_zalloc (maximal_cmdline_size + <span class="number">1</span>);</span><br><span class="line">  <span class="keyword">if</span> (!linux_cmdline)</span><br><span class="line">    <span class="keyword">goto</span> fail;</span><br><span class="line">  grub_memcpy (linux_cmdline, LINUX_IMAGE, <span class="keyword">sizeof</span> (LINUX_IMAGE));</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="type">grub_err_t</span> err;</span><br><span class="line">    err = grub_create_loader_cmdline (argc, argv,</span><br><span class="line">                      linux_cmdline</span><br><span class="line">                      + <span class="keyword">sizeof</span> (LINUX_IMAGE) - <span class="number">1</span>,</span><br><span class="line">                      maximal_cmdline_size</span><br><span class="line">                      - (<span class="keyword">sizeof</span> (LINUX_IMAGE) - <span class="number">1</span>),</span><br><span class="line">                      GRUB_VERIFY_KERNEL_CMDLINE);</span><br><span class="line">    <span class="keyword">if</span> (err)</span><br><span class="line">      <span class="keyword">goto</span> fail;</span><br><span class="line">  &#125;</span><br><span class="line"> </span><br><span class="line">  len = prot_file_size;</span><br><span class="line">  <span class="keyword">if</span> (grub_file_read (file, prot_mode_mem, len) != len &amp;&amp; !grub_errno)</span><br><span class="line">    grub_error (GRUB_ERR_BAD_OS, N_(<span class="string">&quot;premature end of file %s&quot;</span>),</span><br><span class="line">        argv[<span class="number">0</span>]);</span><br><span class="line"> </span><br><span class="line">  <span class="keyword">if</span> (grub_errno == GRUB_ERR_NONE)</span><br><span class="line">    &#123;</span><br><span class="line">      grub_loader_set (grub_linux_boot, grub_linux_unload,</span><br><span class="line">               <span class="number">0</span> <span class="comment">/* set noreturn=0 in order to avoid grub_console_fini() */</span>);</span><br><span class="line">      loaded = <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="grub-linux-boot"><a href="#grub-linux-boot" class="headerlink" title="grub_linux_boot"></a>grub_linux_boot</h3><p>镜像位于grub-core\linux.mod。</p>
+<p>负责完成内核参数传递、回收内存资源、调用<code>ExitBootServices</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">grub_err_t</span></span><br><span class="line"><span class="title function_">grub_linux_boot</span> <span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">grub_err_t</span> err = <span class="number">0</span>;</span><br><span class="line">  <span class="type">const</span> <span class="type">char</span> *modevar;</span><br><span class="line">  <span class="type">char</span> *tmp;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">grub_relocator32_state</span> <span class="title">state</span>;</span></span><br><span class="line">  <span class="type">void</span> *real_mode_mem;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">grub_linux_boot_ctx</span> <span class="title">ctx</span> =</span> &#123;</span><br><span class="line">    .real_mode_target = <span class="number">0</span></span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="type">grub_size_t</span> mmap_size;</span><br><span class="line">  <span class="type">grub_size_t</span> cl_offset;</span><br><span class="line">  ...</span><br><span class="line">  ...</span><br><span class="line"> </span><br><span class="line">  <span class="meta">#<span class="keyword">ifdef</span> GRUB_MACHINE_EFI</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="type">grub_efi_uintn_t</span> efi_desc_size;</span><br><span class="line">    <span class="type">grub_size_t</span> efi_mmap_target;</span><br><span class="line">    <span class="type">grub_efi_uint32_t</span> efi_desc_version;</span><br><span class="line"> </span><br><span class="line">    ctx.params-&gt;secure_boot = grub_efi_get_secureboot ();</span><br><span class="line"> </span><br><span class="line">    err = grub_efi_finish_boot_services (&amp;efi_mmap_size, efi_mmap_buf, <span class="literal">NULL</span>,</span><br><span class="line">                     &amp;efi_desc_size, &amp;efi_desc_version);</span><br><span class="line">    <span class="keyword">if</span> (err)</span><br><span class="line">      <span class="keyword">return</span> err;</span><br><span class="line"> </span><br><span class="line">    ...</span><br><span class="line"> </span><br><span class="line">  <span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"> </span><br><span class="line">  <span class="comment">/* FIXME.  */</span></span><br><span class="line">  <span class="comment">/*  asm volatile (&quot;lidt %0&quot; : : &quot;m&quot; (idt_desc)); */</span></span><br><span class="line">  state.ebp = state.edi = state.ebx = <span class="number">0</span>;</span><br><span class="line">  state.esi = ctx.real_mode_target;</span><br><span class="line">  state.esp = ctx.real_mode_target;</span><br><span class="line">  state.eip = ctx.params-&gt;code32_start;</span><br><span class="line">  <span class="keyword">return</span> grub_relocator32_boot (relocator, state, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>来看看<code>grub_efi_finish_boot_services</code>，调用efi系统表中的exit_boot_services来将权限转移给内核：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">grub_err_t</span></span><br><span class="line"><span class="title function_">grub_efi_finish_boot_services</span> <span class="params">(<span class="type">grub_efi_uintn_t</span> *outbuf_size, <span class="type">void</span> *outbuf,</span></span><br><span class="line"><span class="params">                   <span class="type">grub_efi_uintn_t</span> *map_key,</span></span><br><span class="line"><span class="params">                   <span class="type">grub_efi_uintn_t</span> *efi_desc_size,</span></span><br><span class="line"><span class="params">                   <span class="type">grub_efi_uint32_t</span> *efi_desc_version)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">grub_efi_boot_services_t</span> *b;</span><br><span class="line">  <span class="type">grub_efi_status_t</span> status;</span><br><span class="line"> </span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined (__i386__) || defined (__x86_64__)</span></span><br><span class="line">  <span class="type">const</span> <span class="type">grub_uint16_t</span> apple[] = &#123; <span class="string">&#x27;A&#x27;</span>, <span class="string">&#x27;p&#x27;</span>, <span class="string">&#x27;p&#x27;</span>, <span class="string">&#x27;l&#x27;</span>, <span class="string">&#x27;e&#x27;</span> &#125;;</span><br><span class="line">  <span class="type">int</span> is_apple;</span><br><span class="line"> </span><br><span class="line">  is_apple = (grub_memcmp (grub_efi_system_table-&gt;firmware_vendor,</span><br><span class="line">               apple, <span class="keyword">sizeof</span> (apple)) == <span class="number">0</span>);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"> </span><br><span class="line">  <span class="keyword">while</span> (<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> (grub_efi_get_memory_map (&amp;finish_mmap_size, finish_mmap_buf, &amp;finish_key,</span><br><span class="line">                   &amp;finish_desc_size, &amp;finish_desc_version) &lt; <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">return</span> grub_error (GRUB_ERR_IO, <span class="string">&quot;couldn&#x27;t retrieve memory map&quot;</span>);</span><br><span class="line"> </span><br><span class="line">      <span class="keyword">if</span> (outbuf &amp;&amp; *outbuf_size &lt; finish_mmap_size)</span><br><span class="line">    <span class="keyword">return</span> grub_error (GRUB_ERR_IO, <span class="string">&quot;memory map buffer is too small&quot;</span>);</span><br><span class="line"> </span><br><span class="line">      finish_mmap_buf = grub_malloc (finish_mmap_size);</span><br><span class="line">      <span class="keyword">if</span> (!finish_mmap_buf)</span><br><span class="line">    <span class="keyword">return</span> grub_errno;</span><br><span class="line"> </span><br><span class="line">      <span class="keyword">if</span> (grub_efi_get_memory_map (&amp;finish_mmap_size, finish_mmap_buf, &amp;finish_key,</span><br><span class="line">                   &amp;finish_desc_size, &amp;finish_desc_version) &lt;= <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      grub_free (finish_mmap_buf);</span><br><span class="line">      <span class="keyword">return</span> grub_error (GRUB_ERR_IO, <span class="string">&quot;couldn&#x27;t retrieve memory map&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">      b = grub_efi_system_table-&gt;boot_services;</span><br><span class="line">      status = efi_call_2 (b-&gt;exit_boot_services, grub_efi_image_handle,</span><br><span class="line">               finish_key);</span><br><span class="line">      <span class="keyword">if</span> (status == GRUB_EFI_SUCCESS)</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line"> </span><br><span class="line">      <span class="keyword">if</span> (status != GRUB_EFI_INVALID_PARAMETER)</span><br><span class="line">    &#123;</span><br><span class="line">      grub_free (finish_mmap_buf);</span><br><span class="line">      <span class="keyword">return</span> grub_error (GRUB_ERR_IO, <span class="string">&quot;couldn&#x27;t terminate EFI services&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">      grub_free (finish_mmap_buf);</span><br><span class="line">      grub_printf (<span class="string">&quot;Trying to terminate EFI services again\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  grub_efi_is_finished = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">if</span> (outbuf_size)</span><br><span class="line">    *outbuf_size = finish_mmap_size;</span><br><span class="line">  <span class="keyword">if</span> (outbuf)</span><br><span class="line">    grub_memcpy (outbuf, finish_mmap_buf, finish_mmap_size);</span><br><span class="line">  <span class="keyword">if</span> (map_key)</span><br><span class="line">    *map_key = finish_key;</span><br><span class="line">  <span class="keyword">if</span> (efi_desc_size)</span><br><span class="line">    *efi_desc_size = finish_desc_size;</span><br><span class="line">  <span class="keyword">if</span> (efi_desc_version)</span><br><span class="line">    *efi_desc_version = finish_desc_version;</span><br><span class="line"> </span><br><span class="line"><span class="meta">#<span class="keyword">if</span> defined (__i386__) || defined (__x86_64__)</span></span><br><span class="line">  <span class="keyword">if</span> (is_apple)</span><br><span class="line">    stop_broadcom ();</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"> </span><br><span class="line">  <span class="keyword">return</span> GRUB_ERR_NONE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="grub-memalign"><a href="#grub-memalign" class="headerlink" title="grub_memalign"></a>grub_memalign</h2><p>align必须为2的幂</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/* Magic words.  */</span><br><span class="line">#define GRUB_MM_FREE_MAGIC    0x2d3c2808</span><br><span class="line">#define GRUB_MM_ALLOC_MAGIC    0x6db08fa4</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a target="_blank" rel="noopener" href="https://www.rodsbooks.com/efi-bootloaders/fallback.html">https://www.rodsbooks.com/efi-bootloaders/fallback.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.gnu.org/software/grub/manual/grub/html_node/Images.html#Images">https://www.gnu.org/software/grub/manual/grub/html_node/Images.html#Images</a></p>
+<p><a target="_blank" rel="noopener" href="https://wiki.ubuntu-tw.org/index.php?title=Grub2">https://wiki.ubuntu-tw.org/index.php?title=Grub2</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/f-ck-need-u/p/7094693.html#auto_id_17">https://www.cnblogs.com/f-ck-need-u/p/7094693.html#auto_id_17</a></p>
+
+        
+      </div>
+
+         
+    </div>
+    
+     
+  </div>
+  
+    
+<nav id="article-nav">
+  <a class="article-nav-btn left "
+    
+      href="/project/2023/08/09/OS-Loader%E5%88%B0%E5%86%85%E6%A0%B8%E7%9A%84%E6%8E%A7%E5%88%B6%E6%9D%83%E8%BD%AC%E7%A7%BB/"
+      title="OS Loader到内核的控制权转移"
+     >
+    <i class="fa-solid fa-angle-left"></i>
+    <p class="title-text">
+      
+        OS Loader到内核的控制权转移
+        
+    </p>
+  </a>
+  <a class="article-nav-btn right "
+    
+      href="/project/2023/08/09/CSM%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0/"
+      title="CSM原理学习"
+     >
+
+    <p class="title-text">
+      
+        CSM原理学习
+        
+    </p>
+    <i class="fa-solid fa-angle-right"></i>
+  </a>
+</nav>
+
+
+  
+</article>
+
+
+  
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <div id="comment-card" class="comment-card">
+    <div class="main-title-bar">
+      <div class="main-title-dot"></div>
+      <div class="main-title">留言 </div>
+    </div>
+    <div id="vcomments"></div>
+  </div>
+  <script>
+      new Valine({"enable":true,"appId":"bC8HOSKa4QB7G6TfuGWB97i4-gzGzoHsz","appKey":"aoDFuSX5vWN8Xn1ukZpJ50be","placeholder":"写下你的评论...","pageSize":10,"highlight":true,"serverURLs":null,"el":"#vcomments"});
+  </script>
+ 
+    </div>
+    <div id="footer-wrapper">
+      <footer id="footer">
+  
+  <div id="footer-info" class="inner">
+    
+    &copy; 2023 Edvison<br>
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> & Theme <a target="_blank" rel="noopener" href="https://github.com/saicaca/hexo-theme-vivia">Vivia</a>
+  </div>
+</footer>
+
+    </div>
+    <div class="back-to-top-wrapper">
+    <button id="back-to-top-btn" class="back-to-top-btn" onclick="topFunction()">
+        <span class="material-symbols-rounded">keyboard_arrow_up</span>
+    </button>
+</div>
+
+<script>
+    function topFunction() {
+        window.scroll({ top: 0, behavior: 'smooth' });
+    }
+    let btn = document.getElementById('back-to-top-btn');
+    function scrollFunction() {
+        if (document.body.scrollTop > 600 || document.documentElement.scrollTop > 600) {
+            btn.style.opacity = 1;
+        } else {
+            btn.style.opacity = 0;
+        }
+    }
+    window.onscroll = function() {
+        scrollFunction();
+    }
+</script>
+
+  </div>
+  <script src="/project/js/light-dark-switch.js"></script>
+</body>
+</html>

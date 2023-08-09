@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+
+
+<html theme="dark" showBanner="true" hasBanner="true" > 
+<link href="/project/fontawesome/css/fontawesome.css" rel="stylesheet">
+<link href="/project/fontawesome/css/brands.css" rel="stylesheet">
+<link href="/project/fontawesome/css/solid.css" rel="stylesheet">
+<script src="/project/js/color.global.min.js" ></script>
+<script src="/project/js/load-settings.js" ></script>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>qemu串口调试UEFI固件 | Edvison&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="windows及ubuntu下使用qemu串口调试的方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="qemu串口调试UEFI固件">
+<meta property="og:url" content="https://edvison.github.io/project/2023/08/09/qemu%E4%B8%B2%E5%8F%A3%E8%B0%83%E8%AF%95UEFI%E5%9B%BA%E4%BB%B6/index.html">
+<meta property="og:site_name" content="Edvison&#39;s blog">
+<meta property="og:description" content="windows及ubuntu下使用qemu串口调试的方法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/11/16/97IU8bdrwZAnHEj.png">
+<meta property="og:image" content="https://i.loli.net/2021/11/16/ftwZImgyeSV3YkQ.png">
+<meta property="og:image" content="https://i.loli.net/2021/11/16/cVNZW9DlFPE4JeY.png">
+<meta property="og:image" content="https://i.loli.net/2021/11/16/p5StYam7R6usqBN.png">
+<meta property="og:image" content="https://i.loli.net/2021/11/16/JniokjexPlOQsyw.png">
+<meta property="og:image" content="https://i.loli.net/2021/11/17/NWb3B5m7lkIqgAM.png">
+<meta property="og:image" content="https://i.loli.net/2021/11/18/qlWJyMKnjV6i3Po.png">
+<meta property="og:image" content="https://i.loli.net/2021/11/18/FT8fInyh3GMP5QW.png">
+<meta property="og:image" content="https://i.loli.net/2021/11/18/zbM6qLPpwfxsNDC.png">
+<meta property="article:published_time" content="2023-08-09T07:19:49.000Z">
+<meta property="article:modified_time" content="2023-08-09T07:22:01.190Z">
+<meta property="article:author" content="edvison">
+<meta property="article:tag" content="UEFI">
+<meta property="article:tag" content="环境搭建">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/11/16/97IU8bdrwZAnHEj.png">
+  
+    <link rel="alternate" href="/project/atom.xml" title="Edvison's blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-192.png" sizes="192x192">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-192.png" sizes="192x192">
+  
+  
+<link rel="stylesheet" href="/project/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  
+  
+    
+<div id="banner" class="">
+  <img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230807175151.png" itemprop="image">
+  <div id="banner-dim"></div>
+</div>
+ 
+   
+  <div id="main-grid" class="shadow   ">
+    <div id="nav" class=""  >
+      <navbar id="navbar">
+  <nav id="title-nav">
+    <a href="/project/">
+      <div id="vivia-logo">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div>Edvison's blog </div>
+    </a>
+  </nav>
+  <nav id="main-nav">
+    
+      <a class="main-nav-link" href="/project/">Home</a>
+    
+      <a class="main-nav-link" href="/project/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/project/about">About</a>
+    
+  </nav>
+  <nav id="sub-nav">
+    <a id="theme-btn" class="nav-icon">
+      <span class="material-symbols-rounded light-mode-icon">wb_sunny</span>
+      <span class="material-symbols-rounded dark-mode-icon">dark_mode</span>
+    </a>
+    
+      <a id="nav-rss-link" class="nav-icon mobile-hide" href="/project/atom.xml" title="RSS 订阅">
+        <span class="material-symbols-rounded rss">rss_feed</span>
+      </a>
+    
+    <a id="nav-search-btn" class="nav-icon" title="搜索" style="display: none;">
+      <span class="material-symbols-rounded">search</span>
+    </a>
+    <div id="nav-menu-btn" class="nav-icon">
+      <span class="material-symbols-rounded">menu</span>
+    </div>
+  </nav>
+</navbar>
+<div id="nav-dropdown" class="hidden">
+  <div id="dropdown-link-list">
+    
+      <a class="nav-dropdown-link" href="/project/">Home</a>
+    
+      <a class="nav-dropdown-link" href="/project/archives">Archives</a>
+    
+      <a class="nav-dropdown-link" href="/project/about">About</a>
+    
+    
+      <a class="nav-dropdown-link" href="/project/atom.xml" title="RSS 订阅">RSS</a>
+     
+    </div>
+</div>
+<script>
+  let dropdownBtn = document.getElementById("nav-menu-btn");
+  let dropdownEle = document.getElementById("nav-dropdown");
+  dropdownBtn.onclick = function() {
+    dropdownEle.classList.toggle("hidden");
+  }
+</script>
+    </div>
+    <div id="sidebar-wrapper">
+      <sidebar id="sidebar">
+  
+    <div class="widget-wrap">
+  <div class="info-card">
+    <div class="avatar">
+      
+        <image src=https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230808155156.png></image>
+      
+      <div class="img-dim"></div>
+    </div>
+    <div class="info">
+      <div class="username">Edvison </div>
+      <div class="dot"></div>
+      <div class="subtitle">flung out of space </div>
+      <div class="link-list">
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://github.com/Edvison" title="github"><i class="fa-brands fa-github"></i></a>
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://weibo.com/u/6038772011" title="weibo"><i class="fa-brands fa-weibo"></i></a>
+         
+      </div>  
+    </div>
+  </div>
+</div>
+
+  
+  <div class="sticky">
+    
+      
+
+
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">分类</h3>
+      <div class="category-box">
+            <a class="category-link" href="/project/categories/UEFI%E5%8E%9F%E7%90%86/">
+                UEFI原理
+                <div class="category-count">3</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/UEFI%E5%9B%BA%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                UEFI固件安全
+                <div class="category-count">6</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/MBR%E5%8E%9F%E7%90%86/">
+                MBR原理
+                <div class="category-count">2</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%BF%BB%E8%AF%91/">
+                翻译
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/Grub2%E5%8E%9F%E7%90%86/">
+                Grub2原理
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/IoT%E5%AE%89%E5%85%A8/">
+                IoT安全
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%A1%AC%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                硬件安全
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/VBIOS%E4%BF%AE%E6%94%B9/">
+                VBIOS修改
+                <div class="category-count">1</div>
+            </a>
+        </div>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">标签</h3>
+      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/CSM/" rel="tag">CSM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/DMA%E6%94%BB%E5%87%BB/" rel="tag">DMA攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/Grub2/" rel="tag">Grub2</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/HID%E6%94%BB%E5%87%BB/" rel="tag">HID攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR/" rel="tag">MBR</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR%E5%90%8E%E9%97%A8/" rel="tag">MBR后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OS-Loader/" rel="tag">OS Loader</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OVMF%E7%BC%96%E8%AF%91/" rel="tag">OVMF编译</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/PCH/" rel="tag">PCH</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM/" rel="tag">SMM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E5%90%8E%E9%97%A8/" rel="tag">SMM后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">SMM漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/UEFI/" rel="tag">UEFI</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/VBIOS/" rel="tag">VBIOS</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/pcie/" rel="tag">pcie</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4/" rel="tag">写保护</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4%E7%AA%81%E7%A0%B4/" rel="tag">写保护突破</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%8E%9F%E7%90%86/" rel="tag">原理</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/" rel="tag">安全启动</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%BC%80%E5%8F%91%E6%9D%BF/" rel="tag">开发板</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/" rel="tag">树莓派</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" rel="tag">漏洞利用</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E6%89%AB%E6%8F%8F/" rel="tag">漏洞扫描</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" rel="tag">环境搭建</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%94%B5%E6%BA%90%E6%95%85%E9%9A%9C/" rel="tag">电源故障</a></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">归档</h3>
+      
+      
+        <a class="archive-link" href="/project/archives/2023/08 ">
+          八月 2023 
+          <div class="archive-count">22 </div>
+        </a>
+      
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">最新文章</h3>
+      <ul>
+        
+          <a class="recent-link" href="/project/2023/08/09/Lenovo%E5%9B%BA%E4%BB%B6%E4%B8%AD%E7%9A%84SMM-callout%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="Lenovo固件中的SMM callout漏洞利用" >
+            <div class="recent-link-text">
+              Lenovo固件中的SMM callout漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%88%A9%E7%94%A8DMA%E6%94%BB%E5%87%BB%E7%AA%81%E7%A0%B4UEFI%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6/" title="利用DMA攻击突破UEFI安全机制" >
+            <div class="recent-link-text">
+              利用DMA攻击突破UEFI安全机制
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/UEFI-%E5%BC%95%E5%AF%BC%E8%84%9A%E6%9C%AC%E8%A1%A8%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="UEFI 引导脚本表漏洞利用" >
+            <div class="recent-link-text">
+              UEFI 引导脚本表漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%9F%BA%E4%BA%8EUEFI%E5%B9%B3%E5%8F%B0%E7%9A%84SMM%E5%90%8E%E9%97%A8%E6%9E%84%E5%BB%BA/" title="基于UEFI平台的SMM后门构建" >
+            <div class="recent-link-text">
+              基于UEFI平台的SMM后门构建
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/P4wnP1%E9%85%8D%E7%BD%AE%E4%B8%8E%E4%BD%BF%E7%94%A8/" title="P4wnP1配置与使用" >
+            <div class="recent-link-text">
+              P4wnP1配置与使用
+            </div>
+          </a>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+  </div>
+</sidebar>
+    </div>
+    <div id="content-body">
+       
+
+<article id="post-qemu串口调试UEFI固件" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  
+    
+   
+  <div class="article-inner">
+    <div class="article-main">
+      <header class="article-header">
+        
+<div class="main-title-bar">
+  <div class="main-title-dot"></div>
+  
+    
+      <h1 class="p-name article-title" itemprop="headline name">
+        qemu串口调试UEFI固件
+      </h1>
+    
+  
+</div>
+
+        <div class='meta-info-bar'>
+          <div class="meta-info">
+  <time class="dt-published" datetime="2023-08-09T07:19:49.000Z" itemprop="datePublished">2023-08-09</time>
+</div>
+          <div class="need-seperator meta-info">
+            <div class="meta-cate-flex">
+  
+  <a class="meta-cate-link" href="/project/categories/UEFI%E5%9B%BA%E4%BB%B6%E5%AE%89%E5%85%A8/">UEFI固件安全</a>
+   
+</div>
+  
+          </div>
+          <div class="wordcount need-seperator meta-info">
+            1k 词 
+          </div>
+        </div>
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/UEFI/" rel="tag">UEFI</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" rel="tag">环境搭建</a></li></ul>
+
+      </header>
+      <div class="e-content article-entry" itemprop="articleBody">
+        
+          <p>windows及ubuntu下使用qemu串口调试的方法。</p>
+<span id="more"></span>
+
+<p>（一些截图里使用了efiguard引导，不用在意）</p>
+<h1 id="windows-10下"><a href="#windows-10下" class="headerlink" title="windows 10下"></a>windows 10下</h1><p>下载qemu安装包：<a target="_blank" rel="noopener" href="https://qemu.weilnetz.de/w64/">https://qemu.weilnetz.de/w64/</a></p>
+<ul>
+<li>固件启动</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64.exe -bios &quot;OVMF.fd&quot; -net none</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>指定目录为磁盘</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64.exe -bios &quot;OVMF.fd&quot; -net none -hda fat:rw:C:\programs\efiguard-test</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://i.loli.net/2021/11/16/97IU8bdrwZAnHEj.png" alt="image-20211116172909436"></p>
+<ul>
+<li>模拟串口打印</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64.exe -bios &quot;OVMF.fd&quot; -net none -hda fat:rw:C:\programs\efiguard-test -serial stdio</span><br></pre></td></tr></table></figure>
+
+<p>stdio选项会在命令行打印串口信息：</p>
+<p><img src="https://i.loli.net/2021/11/16/ftwZImgyeSV3YkQ.png" alt="image-20211116173240076"></p>
+<p>但乱码偏多，不易阅读，用虚拟串口驱动工具<strong>Virtual Serial Port Driver</strong>来模拟两个串口，一个供qemu使用，一个用于接收串口数据。</p>
+<p>点<code>Add virtual pari</code>：</p>
+<p><img src="https://i.loli.net/2021/11/16/cVNZW9DlFPE4JeY.png" alt="image-20211116174049541"></p>
+<p>可看到设备管理器中新增了两个串口：</p>
+<p><img src="https://i.loli.net/2021/11/16/p5StYam7R6usqBN.png" alt="image-20211116174258516"></p>
+<p>再用qemu启动，注意修改stdio为串口号COM1：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64.exe -bios &quot;OVMF.fd&quot; -net none -hda fat:rw:C:\programs\efiguard-test -serial COM1</span><br></pre></td></tr></table></figure>
+
+<p>监听COM2，可看到串口输出：</p>
+<p><img src="https://i.loli.net/2021/11/16/JniokjexPlOQsyw.png" alt="image-20211116174636924"></p>
+<h1 id="linux-ubuntu下"><a href="#linux-ubuntu下" class="headerlink" title="linux ubuntu下"></a>linux ubuntu下</h1><p>安装qemu:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install qemu qemu-system qemu-user-static</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建win10虚拟机</li>
+</ul>
+<p>下载VirtIO驱动：<a target="_blank" rel="noopener" href="https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.126-2/">https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.126-2/</a></p>
+<p>虚拟机需启用VT-x</p>
+<p>创建虚拟硬盘：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img create -f qcow2 win10x64.img 20G</span><br></pre></td></tr></table></figure>
+
+<p>安装脚本如下，使用ubuntu系统目录下的OVMF作为引导固件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line">/usr/bin/qemu-system-x86_64 \</span><br><span class="line">-machine type=q35,accel=kvm:tcg \</span><br><span class="line">-cpu host \</span><br><span class="line">-smp cpus=2,cores=2,threads=1,sockets=1 \</span><br><span class="line">-bios /usr/share/OVMF/OVMF_CODE.fd \</span><br><span class="line">-m 2G \</span><br><span class="line">-k en-us \</span><br><span class="line">-name &quot;Microsoft Windows 10&quot; \</span><br><span class="line">-drive file=&quot;win10x64_efi.img&quot;,if=virtio,index=0,media=disk,cache=writeback,format=qcow2 \</span><br><span class="line">-drive file=&quot;Win10_2004_English_x64.iso&quot;,if=ide,index=1,media=cdrom,cache=writeback,readonly \</span><br><span class="line">-drive file=&quot;virtio-win-0.1.126.iso&quot;,if=ide,index=2,media=cdrom,cache=writeback,readonly \</span><br><span class="line">-usb \</span><br><span class="line">-net none \</span><br><span class="line">-monitor stdio \</span><br><span class="line">-rtc base=localtime</span><br></pre></td></tr></table></figure>
+
+<p>进入安装过程，如提示无法找到磁盘，则选择<em>Load Drivers</em>，然后取消<em>Hide drivers that are not compatible with this computer’s hardware</em>复选框，点击<em>Browse</em>浏览文件：</p>
+<p><img src="https://i.loli.net/2021/11/17/NWb3B5m7lkIqgAM.png" alt="image-20211117172603479"></p>
+<p>选择virtio驱动盘下的<em>E:\viostor\w10\amd64</em>文件夹，并打开，如下图，点击Next就能正常安装了：</p>
+<p><img src="https://i.loli.net/2021/11/18/qlWJyMKnjV6i3Po.png" alt="image-20211117172757059"></p>
+<ul>
+<li>串口输出</li>
+</ul>
+<p>用socat生成虚拟串口设备：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ socat -d -d pty,raw,echo=0 pty,raw,echo=0</span><br><span class="line">2021/11/18 10:58:41 socat[2510] N PTY is /dev/pts/3</span><br><span class="line">2021/11/18 10:58:41 socat[2510] N PTY is /dev/pts/4</span><br><span class="line">2021/11/18 10:58:41 socat[2510] N starting data transfer loop with FDs [5,5] and [7,7]</span><br></pre></td></tr></table></figure>
+
+<p>生成的<code>/dev/pts/3</code>和<code>/dev/pts/4</code>即为虚拟串口，监听&#x2F;dev&#x2F;pts&#x2F;4设备：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat &lt; /dev/pts/4</span><br></pre></td></tr></table></figure>
+
+<p>qemu串口输出到&#x2F;dev&#x2F;pts&#x2F;3：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/qemu-system-x86_64 \</span><br><span class="line">-bios OVMF.fd -net none \</span><br><span class="line">-hda fat:rw:/home/edvison/qemu-win10/efi \</span><br><span class="line">-serial /dev/pts/3</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://i.loli.net/2021/11/18/FT8fInyh3GMP5QW.png" alt="image-20211118110216525"></p>
+<ul>
+<li>Windows启动过程串口输出</li>
+</ul>
+<p>启动脚本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line">/usr/bin/qemu-system-x86_64 \</span><br><span class="line">-machine type=q35,accel=kvm:tcg \</span><br><span class="line">-cpu host \</span><br><span class="line">-smp cpus=2,cores=2,threads=1,sockets=1 \</span><br><span class="line">-boot menu=on \</span><br><span class="line">-bios /usr/share/OVMF/OVMF_CODE.fd \</span><br><span class="line">-m 2G \</span><br><span class="line">-k en-us \</span><br><span class="line">-name &quot;Microsoft Windows 10&quot; \</span><br><span class="line">-drive file=&quot;win10x64_efi.img&quot;,if=virtio,index=0,media=disk,cache=writeback,format=qcow2 \</span><br><span class="line">-hda fat:rw:/home/edvison/qemu-win10/efi \</span><br><span class="line">-usb \</span><br><span class="line">-net none \</span><br><span class="line">-monitor stdio \</span><br><span class="line">-rtc base=localtime \</span><br><span class="line">-serial /dev/pts/3</span><br></pre></td></tr></table></figure>
+
+<p>启用<code>-boot menu=on</code>即可在启动过程中按ESC键进入BIOS设置界面，选择进入EFI Shell进行调试：</p>
+<p><img src="https://i.loli.net/2021/11/18/zbM6qLPpwfxsNDC.png" alt="image-20211118155533749"></p>
+<h2 id="OVMF-Qemu-调试"><a href="#OVMF-Qemu-调试" class="headerlink" title="OVMF + Qemu 调试"></a>OVMF + Qemu 调试</h2><p>默认的OVMF版本会把调试消息写入0x402 IO端口，用下面的qemu参数可以保存调试信息到文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-debugcon file:debug.log -global isa-debugcon.iobase=0x402</span><br></pre></td></tr></table></figure>
+
+<p>将调试信息写入模拟串口，需在构建OVMF时添加<code>-D DEBUG_ON_SERIAL_PORT</code>参数，并使用qemu参数<code>-serial file:serial.log</code>把信息输出到文件。（可以和debugcon同时使用）</p>
+<p>qemu调试启动脚本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line">/usr/bin/qemu-system-x86_64 \</span><br><span class="line">-machine type=q35,accel=kvm:tcg \</span><br><span class="line">-cpu host \</span><br><span class="line">-smp cpus=2,cores=2,threads=1,sockets=1 \</span><br><span class="line">-boot menu=on \</span><br><span class="line">-bios OVMF_CODE-bds-serial.fd \</span><br><span class="line">-m 2G \</span><br><span class="line">-k en-us \</span><br><span class="line">-name &quot;Microsoft Windows 10&quot; \</span><br><span class="line">-drive file=&quot;win10x64_efi.img&quot;,if=virtio,index=0,media=disk,cache=writeback,format=qcow2 \</span><br><span class="line">-hda fat:rw:/home/edvison/qemu-win10/efi \</span><br><span class="line">-usb \</span><br><span class="line">-net none \</span><br><span class="line">-monitor stdio \</span><br><span class="line">-rtc base=localtime \</span><br><span class="line">-serial file:serial.log \</span><br><span class="line">-debugcon file:debug.log -global isa-debugcon.iobase=0x402</span><br></pre></td></tr></table></figure>
+
+<h1 id="windows-qemu安装win-7"><a href="#windows-qemu安装win-7" class="headerlink" title="windows qemu安装win 7"></a>windows qemu安装win 7</h1><p>创建虚拟硬盘：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-img.exe create -f qcow2 win7x64.img 20G</span><br></pre></td></tr></table></figure>
+
+<p>安装脚本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64.exe ^</span><br><span class="line">-bios OVMF_CODE.fd ^</span><br><span class="line">-boot menu=on ^</span><br><span class="line">-smp cpus=2,cores=2,threads=1,sockets=1 ^</span><br><span class="line">-m 4G ^</span><br><span class="line">-k en-us ^</span><br><span class="line">-name &quot;Microsoft Windows 7&quot; ^</span><br><span class="line">-hda D:\ISO\win7x64.img ^</span><br><span class="line">-drive file=en_windows_7_professional_with_sp1_x64_dvd_u_676939.iso,if=ide,index=1,media=cdrom,cache=writeback,readonly=on ^</span><br><span class="line">-usb ^</span><br><span class="line">-net none ^</span><br><span class="line">-monitor stdio ^</span><br><span class="line">-rtc base=localtime ^</span><br></pre></td></tr></table></figure>
+
+<p>启动脚本：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64.exe ^</span><br><span class="line">-bios OVMF_CODE.fd ^</span><br><span class="line">-boot menu=on ^</span><br><span class="line">-smp cpus=2,cores=2,threads=1,sockets=1 ^</span><br><span class="line">-m 4G ^</span><br><span class="line">-k en-us ^</span><br><span class="line">-name &quot;Microsoft Windows 7&quot; ^</span><br><span class="line">-hda D:\ISO\win7x64.img ^</span><br><span class="line">-usb ^</span><br><span class="line">-net none ^</span><br><span class="line">-monitor stdio ^</span><br><span class="line">-rtc base=localtime ^</span><br></pre></td></tr></table></figure>
+
+        
+      </div>
+
+         
+    </div>
+    
+     
+  </div>
+  
+    
+<nav id="article-nav">
+  <a class="article-nav-btn left "
+    
+      href="/project/2023/08/09/MBR%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0/"
+      title="MBR原理学习"
+     >
+    <i class="fa-solid fa-angle-left"></i>
+    <p class="title-text">
+      
+        MBR原理学习
+        
+    </p>
+  </a>
+  <a class="article-nav-btn right "
+    
+      href="/project/2023/08/09/BIOS%E5%86%99%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/"
+      title="BIOS写保护机制"
+     >
+
+    <p class="title-text">
+      
+        BIOS写保护机制
+        
+    </p>
+    <i class="fa-solid fa-angle-right"></i>
+  </a>
+</nav>
+
+
+  
+</article>
+
+
+  
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <div id="comment-card" class="comment-card">
+    <div class="main-title-bar">
+      <div class="main-title-dot"></div>
+      <div class="main-title">留言 </div>
+    </div>
+    <div id="vcomments"></div>
+  </div>
+  <script>
+      new Valine({"enable":true,"appId":"bC8HOSKa4QB7G6TfuGWB97i4-gzGzoHsz","appKey":"aoDFuSX5vWN8Xn1ukZpJ50be","placeholder":"写下你的评论...","pageSize":10,"highlight":true,"serverURLs":null,"el":"#vcomments"});
+  </script>
+ 
+    </div>
+    <div id="footer-wrapper">
+      <footer id="footer">
+  
+  <div id="footer-info" class="inner">
+    
+    &copy; 2023 Edvison<br>
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> & Theme <a target="_blank" rel="noopener" href="https://github.com/saicaca/hexo-theme-vivia">Vivia</a>
+  </div>
+</footer>
+
+    </div>
+    <div class="back-to-top-wrapper">
+    <button id="back-to-top-btn" class="back-to-top-btn" onclick="topFunction()">
+        <span class="material-symbols-rounded">keyboard_arrow_up</span>
+    </button>
+</div>
+
+<script>
+    function topFunction() {
+        window.scroll({ top: 0, behavior: 'smooth' });
+    }
+    let btn = document.getElementById('back-to-top-btn');
+    function scrollFunction() {
+        if (document.body.scrollTop > 600 || document.documentElement.scrollTop > 600) {
+            btn.style.opacity = 1;
+        } else {
+            btn.style.opacity = 0;
+        }
+    }
+    window.onscroll = function() {
+        scrollFunction();
+    }
+</script>
+
+  </div>
+  <script src="/project/js/light-dark-switch.js"></script>
+</body>
+</html>

